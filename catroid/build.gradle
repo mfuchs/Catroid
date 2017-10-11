@@ -49,6 +49,12 @@ apply from: 'gradle/standalone_apk_tasks.gradle'
 check.dependsOn 'checkstyle'
 check.dependsOn 'pmd'
 
+/*
+ * Call this before the android closure as it potentially prepares the
+ * application name and other variables then used iniside of the android closure.
+ */
+//standalonePreparation()
+
 android {
     dexOptions {
         javaMaxHeapSize "4g"
@@ -94,6 +100,7 @@ android {
     }
 
     productFlavors {
+        println("######### FLAVORS")
         catroid {
             applicationId 'org.catrobat.catroid'
             buildConfigField "String", "START_PROJECT", "\"No Starting Project\""
@@ -103,12 +110,13 @@ android {
         }
 
         standalone {
-            applicationId 'org.catrobat.catroid.' + getPackageNameSuffix()
+            applicationId 'org.catrobat.catroid.' + getPackageNameSuffix() // TODO
             versionCode 1
             versionName '1.0'
 
-            buildConfigField "String", "PROJECT_NAME", "\"${(String) getProjectName()}\"";
-            buildConfigField "String", "START_PROJECT", "\"${(String) getProgramId(true) }\""
+            buildConfigField "String", "START_PROJECT", "\"$projectId\""
+            buildConfigField "String", "PROJECT_NAME", "\"$projectName\"" // TODO above for catroid also use these!
+            // here!
             buildConfigField "boolean", "FEATURE_APK_GENERATOR_ENABLED", "true"
             buildConfigField "boolean", "CRASHLYTICS_CRASH_REPORT_ENABLED", "false"
         }
