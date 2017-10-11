@@ -139,8 +139,9 @@ task standalonePreparation() {
 
         println "zipOutDir: " + zipOutDir.absolutePath
 
+        // TODO when to use ext and when to use project???????? makes no sense to me!
         println "##### B2 $ext.appZipFile"
-        project.ext.standaloneZipPath = ext.assetsPath + ext.projectId + ".zip"
+        ext.standaloneZipPath = project.ext.assetsPath + ext.projectId + ".zip"
         copy {
             from ext.appZipFile
             into ext.standaloneZipPath
