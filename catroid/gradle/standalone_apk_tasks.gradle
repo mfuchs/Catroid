@@ -157,11 +157,12 @@ task standalonePreparation() {
         // downloads it itself???
         println "buildStandalone task triggered"
         // TODO use different manifest handling here!
+        println "##### manifest path: ${project.ext.manifestPath} appName: ${ext.manifestAppName}"
         File manifestFile = file(project.ext.manifestPath)
         println "manifestFile: " + manifestFile.absolutePath
         def manifestText = manifestFile.text
 
-        manifestText = manifestText.replaceAll("@string/app_name", project.ext.manifestAppName);
+        manifestText = manifestText.replaceAll("@string/app_name", ext.manifestAppName);
         manifestText = manifestText.replaceAll("@drawable/ic_launcher", "@drawable/icon");
         manifestFile.write(manifestText)
 
