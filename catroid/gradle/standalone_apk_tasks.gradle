@@ -27,8 +27,7 @@ import groovy.xml.StreamingMarkupBuilder
 import java.util.zip.ZipFile
 
 ext {
-    projectName = "WHACK A MOLE"
-    id = "1"
+    id = "1" // TODO remove!
 
     assetsPath = "src/main/assets/"
     standaloneZipPath = assetsPath + "project.zip"
@@ -42,6 +41,7 @@ ext {
     projectName = 'No Standalone Project'
     manifestAppName = '' // TODO make this happen
     projectId = 'No Starting Project'
+    appZipFile = null
 }
 
 class StandalonePreparation
@@ -61,15 +61,9 @@ class StandalonePreparation
         this.ext = ext
         this.ext.projectId = id
         this.downloadUrl = downloadUrl
-        this.assetsPath = 'src/main/assets' // TODO store the assets path in ext to be then executed by some task
         this.tempDir = File.createTempDir()
-        this.tempDir.deleteOnExit()
-        // that runs first???!
-        this.programZip = new File("${tempDir.absolutePath}/${ext.projectId}.zip") // TODO check if this works with new
-        // File!!!
-        // since it
-        // depends on where gradle was called from (CWD)!! ==> dangerous!
-        this.zipOutDir = new File("${tempDir.absolutePath}/project.zip")
+        this.tempDir.deleteOnExit() // TODO does this even work?
+        this.ext.appZipFile = new File("${tempDir.absolutePath}/${ext.projectId}.zip") // TODO check if this works with new
     }
 
     void execute() {
@@ -85,30 +79,28 @@ class StandalonePreparation
 
     private void download() {
         println "downloading.... " + downloadUrl
-        programZip.withOutputStream {
+        ext.appZipFile.withOutputStream {
             it << new URL(downloadUrl).content
         }
-        println "downloaded to: " + programZip.absolutePath
+        println "downloaded to: " + ext.appZipFile.absolutePath
     }
 
     private void determineProjectName() {
-        def zipFile = new ZipFile(programZip)
+        def zipFile = new ZipFile(ext.appZipFile)
         def codeXmlEntry = zipFile.getEntry('code.xml')
         String codeXmlContents = zipFile.getInputStream(codeXmlEntry).text
         codeXmlContents = codeXmlContents.replaceAll("&#x0;", "") // no \0 characters are allowed in xml
         def programNode = new XmlSlurper().parseText(codeXmlContents)
         String programName = programNode.header.programName.text()
 
-        println "app #$ext.projectId has name $programName"
-        // TODO try the sanitizing with an example string and see what happens --> maybe even try one of those
-        // TODO failing crap programs
+        println "app #$ext.projectId has name '$programName'"
+        // TODO try the sanitizing with failing crap programs
 
         // TODO cleanup file _after_ the APK was generated, i.e. add a new task that has correct dependencies and
         // does that
 
         ext.manifestAppName = escapeXml(programName)
         ext.projectName = escapeJava(programName)
-        println "##### A5 '${ext.manifestAppName}' '${ext.projectName}'"
     }
 
     private String escapeXml(String text) {
@@ -132,7 +124,54 @@ task standalonePreparation() {
      */
     if (project.hasProperty("download")) {
         new StandalonePreparation(project["suffix"], project["download"], ext).execute()
-        println "##### B1 $ext.projectName"
+        println "##### B1 $ext.projectName $ext.appZipFile"
+    }
+
+    doLast {
+        println "### WUSA"
+
+        def id = 824; //debugging purpose only
+
+        //project.ext.id = id // TODO where is this id used? try without it
+
+        File zipOutDir = file(project.ext.standaloneTmpPath)
+        zipOutDir.mkdirs()
+
+        println "zipOutDir: " + zipOutDir.absolutePath
+
+        println "##### B2 $ext.appZipFile"
+        copy {
+            from zipTree(ext.appZipFile)
+            into zipOutDir
+        }
+
+        println "buildStandalone task triggered"
+        File manifestFile = file(project.ext.manifestPath)
+        println "manifestFile: " + manifestFile.absolutePath
+        def manifestText = manifestFile.text
+
+        // TODO use different manifest handling here!
+        manifestText = manifestText.replaceAll("@string/app_name", project.ext.manifestAppName);
+        manifestText = manifestText.replaceAll("@drawable/ic_launcher", "@drawable/icon");
+        manifestFile.write(manifestText)
+
+        removeUnecessaryPermissions()
+
+        File googleServicesJsonFile = file(project.ext.googleServicesJsonPath)
+        def googleServicesJsonText = googleServicesJsonFile.text
+
+        googleServicesJsonText = googleServicesJsonText.replaceAll("org.catrobat.catroid", "org.catrobat.catroid." + project.ext.projectId)
+        googleServicesJsonFile.write(googleServicesJsonText)
+
+        File standaloneInfoTmpFile = file(project.ext.buildStandaloneInfoTmpPath)
+        println "standaloneInfoTmpFile: " + standaloneInfoTmpFile.absolutePath
+        standaloneInfoTmpFile.write(project.ext.id + "\n")
+        standaloneInfoTmpFile.append(project.ext.projectName)
+
+        copyScreenshotAsIcon()
+
+        // TODO where is the contents actually copied? especially since this is removed directly below here!
+        delete project.ext.standaloneTmpPath
     }
 }
 
