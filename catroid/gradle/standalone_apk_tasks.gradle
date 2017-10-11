@@ -140,17 +140,26 @@ task standalonePreparation() {
         println "zipOutDir: " + zipOutDir.absolutePath
 
         println "##### B2 $ext.appZipFile"
+        project.ext.standaloneZipPath = ext.assetsPath + ext.projectId + ".zip"
+        copy {
+            from ext.appZipFile
+            into ext.standaloneZipPath
+        }
+
+        // TODO this is most likely not needed!
         copy {
             from zipTree(ext.appZipFile)
             into zipOutDir
         }
 
+        // TODO do we actually have to unpack this stuff or is it sufficient to provide the icon since the app
+        // downloads it itself???
         println "buildStandalone task triggered"
+        // TODO use different manifest handling here!
         File manifestFile = file(project.ext.manifestPath)
         println "manifestFile: " + manifestFile.absolutePath
         def manifestText = manifestFile.text
 
-        // TODO use different manifest handling here!
         manifestText = manifestText.replaceAll("@string/app_name", project.ext.manifestAppName);
         manifestText = manifestText.replaceAll("@drawable/ic_launcher", "@drawable/icon");
         manifestFile.write(manifestText)
@@ -163,11 +172,6 @@ task standalonePreparation() {
         println "########## C " + ext.projectId
         googleServicesJsonText = googleServicesJsonText.replaceAll("org.catrobat.catroid", "org.catrobat.catroid." + ext.projectId)
         googleServicesJsonFile.write(googleServicesJsonText)
-
-        File standaloneInfoTmpFile = file(project.ext.buildStandaloneInfoTmpPath)
-        println "standaloneInfoTmpFile: " + standaloneInfoTmpFile.absolutePath
-        standaloneInfoTmpFile.write(project.ext.id + "\n")
-        standaloneInfoTmpFile.append(project.ext.projectName)
 
         copyScreenshotAsIcon()
 
