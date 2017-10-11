@@ -160,7 +160,8 @@ task standalonePreparation() {
         File googleServicesJsonFile = file(project.ext.googleServicesJsonPath)
         def googleServicesJsonText = googleServicesJsonFile.text
 
-        googleServicesJsonText = googleServicesJsonText.replaceAll("org.catrobat.catroid", "org.catrobat.catroid." + project.ext.projectId)
+        println "########## C " + ext.projectId
+        googleServicesJsonText = googleServicesJsonText.replaceAll("org.catrobat.catroid", "org.catrobat.catroid." + ext.projectId)
         googleServicesJsonFile.write(googleServicesJsonText)
 
         File standaloneInfoTmpFile = file(project.ext.buildStandaloneInfoTmpPath)
