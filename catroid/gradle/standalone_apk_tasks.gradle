@@ -141,10 +141,9 @@ task standalonePreparation() {
 
         // TODO when to use ext and when to use project???????? makes no sense to me!
         println "##### B2 $ext.appZipFile"
-        ext.standaloneZipPath = project.ext.assetsPath + ext.projectId + ".zip"
         copy {
             from ext.appZipFile
-            into ext.standaloneZipPath
+            into project.ext.assetsPath
         }
 
         // TODO this is most likely not needed!
