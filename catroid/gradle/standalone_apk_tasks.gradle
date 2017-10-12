@@ -279,22 +279,6 @@ ext.getPackageNameSuffix = {
     }
 }
 
-ext.getProgramId = { boolean deleteInfoFile ->
-    File standaloneInfoTmpFile = file(project.ext.buildStandaloneInfoTmpPath)
-    if (standaloneInfoTmpFile.exists()) {
-        def lines = standaloneInfoTmpFile.readLines()
-        assert 2 == lines.size()
-
-        if (deleteInfoFile) {
-            delete buildStandaloneInfoTmpPath
-        }
-
-        return lines[0]
-    }
-
-    return "noID"
-}
-
 def removeUnecessaryPermissions() {
     println "managing Permissions"
     File permissionsFile = file(project.ext.standaloneTmpPath + "permissions.txt")
