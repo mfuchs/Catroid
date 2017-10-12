@@ -50,14 +50,6 @@ class StandalonePreparation
     private def ext
     private String downloadUrl
     private String projectPath
-    private String assetsPath
-    private File tempDir
-    private File programZip
-    private File zipOutDir
-
-    StandalonePreparation(String id, def project) {
-        this(id, "https://pocketcode.org/download/${id}.catrobat", project)
-    }
 
     StandalonePreparation(String id, String downloadUrl, def project) {
         this.ext = project.ext
@@ -65,15 +57,10 @@ class StandalonePreparation
         this.downloadUrl = downloadUrl
         this.projectPath = project.projectDir.absolutePath
         def assetsPath = Paths.get(project.projectDir.absolutePath, this.ext.assetsPath)
-        this.ext.appZipFile = new File("${assetsPath}/${ext.projectId}.zip") // TODO check if this works with new
+        this.ext.appZipFile = new File("${assetsPath}/${ext.projectId}.zip")
     }
 
     void execute() {
-        // TODO maybe do not extract things here but instead just
-        // 1. download the zip
-        // 2. determine the app id --> store in ext
-        // 3. determine the app name --> store in ext
-        // NOTE as a first step this could even be done without actually doing a standalone app!
         println "Preparing for the Standalone APP $ext.projectId"
         download()
         determineProjectName()
@@ -95,7 +82,6 @@ class StandalonePreparation
         def programNode = new XmlSlurper().parseText(codeXmlContents)
         String programName = programNode.header.programName.text()
 
-        println "app #$ext.projectId has name '$programName'"
         // TODO try the sanitizing with failing crap programs
 
         // TODO cleanup file _after_ the APK was generated, i.e. add a new task that has correct dependencies and
@@ -114,11 +100,7 @@ class StandalonePreparation
     }
 }
 
-// TODO this is not actually a task!!!
 task standalonePreparation() {
-    def crapPath = Paths.get(project.projectDir.absolutePath, project.ext.assetsPath)
-    println "##### $crapPath"
-    println("########## standlonePreparation $project.projectDir")
     /*
      * Configuration
      *
@@ -131,29 +113,15 @@ task standalonePreparation() {
         println "##### B1 $project.ext.projectName $project.ext.appZipFile"
     }
 
+    /*
+     * Actual task
+     */
     doLast {
-//        File zipOutDir = file(project.ext.standaloneTmpPath)
-//        zipOutDir.mkdirs()
-
-//        println "zipOutDir: " + zipOutDir.absolutePath
-
-        // TODO this is most likely not needed!
-//        copy {
-//            from zipTree(project.ext.appZipFile)
-//            into zipOutDir
-//        }
-
-        // TODO do we actually have to unpack this stuff or is it sufficient to provide the icon since the app
-        // downloads it itself???
         println "buildStandalone task triggered"
         adaptManifest(file(project.ext.manifestPath), project.ext.manifestAppName)
         removeUnecessaryPermissions()
         adaptGoogleServices(file(project.ext.googleServicesJsonPath), project.ext.projectId)
         copyScreenshotAsIcon(new ZipFile(project.ext.appZipFile))
-//        copyScreenshotAsIcon()
-
-        // TODO where is the contents actually copied? especially since this is removed directly below here!
-//        delete project.ext.standaloneTmpPath
     }
 }
 
@@ -177,73 +145,6 @@ def adaptGoogleServices(File googleServices, String projectId) {
     text = text.replaceAll(oldName, newName)
     googleServices.write(text)
 }
-
-/*task buildStandalone() << {
-    def id = 824; //debugging purpose only
-    def downloadUrl = "";
-
-    if (project.hasProperty("download")) {
-        downloadUrl = project["download"]
-        id = project["suffix"]
-    } else {
-        downloadUrl = "https://pocketcode.org/download/" + id + ".catrobat"
-    }
-
-    project.ext.id = id
-
-    println "downloading.... " + downloadUrl
-
-    project.ext.standaloneZipPath = project.ext.assetsPath + project.ext.id + ".zip"
-
-    File programZip = file(project.ext.standaloneZipPath)
-    println "programZip: " + programZip.absolutePath
-
-    programZip.withOutputStream {
-        it << new URL(downloadUrl).content
-    }
-
-    File zipOutDir = file(project.ext.standaloneTmpPath)
-    zipOutDir.mkdirs()
-
-    println "zipOutDir: " + zipOutDir.absolutePath
-
-    copy {
-        from zipTree(programZip)
-        into zipOutDir
-    }
-
-    project.ext.projectName = getProjectName()
-
-    println "buildStandalone task triggered"
-    File manifestFile = file(project.ext.manifestPath)
-    println "manifestFile: " + manifestFile.absolutePath
-    def manifestText = manifestFile.text
-
-    String projectName = getProjectName();
-    projectName = projectName.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
-            .replaceAll("\"", "&quot;").replaceAll("'", "&apos;");
-
-    manifestText = manifestText.replaceAll("@string/app_name", projectName);
-    manifestText = manifestText.replaceAll("@drawable/ic_launcher", "@drawable/icon");
-    manifestFile.write(manifestText)
-
-    removeUnecessaryPermissions()
-
-    File googleServicesJsonFile = file(project.ext.googleServicesJsonPath)
-    def googleServicesJsonText = googleServicesJsonFile.text
-
-    googleServicesJsonText = googleServicesJsonText.replaceAll("org.catrobat.catroid", "org.catrobat.catroid." + getPackageNameSuffix())
-    googleServicesJsonFile.write(googleServicesJsonText)
-
-    File standaloneInfoTmpFile = file(project.ext.buildStandaloneInfoTmpPath)
-    println "standaloneInfoTmpFile: " + standaloneInfoTmpFile.absolutePath
-    standaloneInfoTmpFile.write(project.ext.id + "\n")
-    standaloneInfoTmpFile.append(project.ext.projectName)
-
-    copyScreenshotAsIcon()
-
-    delete project.ext.standaloneTmpPath
-}*/
 
 task assembleDebugTest(dependsOn: ':assembleCatroidDebugTest') << {}
 task commandlineAdbInstallDebug(dependsOn: ':commandlineAdbInstallCatroidDebug') << {}
