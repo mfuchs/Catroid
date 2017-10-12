@@ -132,16 +132,16 @@ task standalonePreparation() {
     }
 
     doLast {
-        File zipOutDir = file(project.ext.standaloneTmpPath)
-        zipOutDir.mkdirs()
+//        File zipOutDir = file(project.ext.standaloneTmpPath)
+//        zipOutDir.mkdirs()
 
-        println "zipOutDir: " + zipOutDir.absolutePath
+//        println "zipOutDir: " + zipOutDir.absolutePath
 
         // TODO this is most likely not needed!
-        copy {
-            from zipTree(project.ext.appZipFile)
-            into zipOutDir
-        }
+//        copy {
+//            from zipTree(project.ext.appZipFile)
+//            into zipOutDir
+//        }
 
         // TODO do we actually have to unpack this stuff or is it sufficient to provide the icon since the app
         // downloads it itself???
@@ -153,7 +153,7 @@ task standalonePreparation() {
 //        copyScreenshotAsIcon()
 
         // TODO where is the contents actually copied? especially since this is removed directly below here!
-        delete project.ext.standaloneTmpPath
+//        delete project.ext.standaloneTmpPath
     }
 }
 
