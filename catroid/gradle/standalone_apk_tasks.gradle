@@ -132,19 +132,10 @@ task standalonePreparation() {
     }
 
     doLast {
-        println "### WUSA"
-
-        def id = 824; //debugging purpose only
-
-        //project.ext.id = id // TODO where is this id used? try without it
-
         File zipOutDir = file(project.ext.standaloneTmpPath)
         zipOutDir.mkdirs()
 
         println "zipOutDir: " + zipOutDir.absolutePath
-
-        // TODO when to use ext and when to use project???????? makes no sense to me!
-        println "##### C1 $project.ext.appZipFile"
 
         // TODO this is most likely not needed!
         copy {
@@ -155,36 +146,35 @@ task standalonePreparation() {
         // TODO do we actually have to unpack this stuff or is it sufficient to provide the icon since the app
         // downloads it itself???
         println "buildStandalone task triggered"
-        // TODO use different manifest handling here!
-        println "##### manifest path: ${project.ext.manifestPath} appName: ${project.ext.manifestAppName}"
-        File manifestFile = file(project.ext.manifestPath)
-        println "manifestFile: " + manifestFile.absolutePath
-        def manifestText = manifestFile.text
-
-        manifestText = manifestText.replaceAll("@string/app_name", project.ext.manifestAppName);
-        manifestText = manifestText.replaceAll("@drawable/ic_launcher", "@drawable/icon");
-        manifestFile.write(manifestText)
-
+        adaptManifest(file(project.ext.manifestPath), project.ext.manifestAppName)
         removeUnecessaryPermissions()
-
-        File googleServicesJsonFile = file(project.ext.googleServicesJsonPath)
-        def googleServicesJsonText = googleServicesJsonFile.text
-
-        println "########## C2 " + project.ext.projectId
-        // Clean up first to ensure that org.catrobat.catroid.abc does not become org.catrobat.abc.abc after two runs
-        def oldName = 'org.catrobat.catroid'
-        def newName = "org.catrobat.catroid.${project.ext.projectId}"
-        googleServicesJsonText = googleServicesJsonText.replaceAll(newName, oldName)
-
-        // now change it
-        googleServicesJsonText = googleServicesJsonText.replaceAll(oldName, newName)
-        googleServicesJsonFile.write(googleServicesJsonText)
-
+        adaptGoogleServices(file(project.ext.googleServicesJsonPath), project.ext.projectId)
         copyScreenshotAsIcon()
 
         // TODO where is the contents actually copied? especially since this is removed directly below here!
         delete project.ext.standaloneTmpPath
     }
+}
+
+def adaptManifest(File manifest, String appName) {
+    println "manifestFile: " + manifest.absolutePath
+    def text = manifest.text
+    text = text.replaceAll("@string/app_name", appName);
+    text = text.replaceAll("@drawable/ic_launcher", "@drawable/icon");
+    manifest.write(text)
+}
+
+def adaptGoogleServices(File googleServices, String projectId) {
+    def text = googleServices.text
+
+    // Clean up first to ensure that org.catrobat.catroid.abc does not become org.catrobat.abc.abc after two runs
+    def oldName = 'org.catrobat.catroid'
+    def newName = "org.catrobat.catroid.${projectId}"
+    text = text.replaceAll(newName, oldName)
+
+    // now change it
+    text = text.replaceAll(oldName, newName)
+    googleServices.write(text)
 }
 
 task buildStandalone() << {
