@@ -87,6 +87,15 @@ class StandalonePreparation
         // TODO cleanup file _after_ the APK was generated, i.e. add a new task that has correct dependencies and
         // does that
 
+        // TODO
+        // 1. download app file into own directory, e.g. a build directory apps
+        // 2. copy the app over to the resources
+        // 3. when the build finishes
+        //    a) remove the zip file from the resources
+        //    b) revert the changes for the json file
+        // that way it is easier to call the job locally with different apps
+        // furthermore this allows to _not_ redownload already downloaded apps
+
         ext.manifestAppName = escapeXml(programName)
         ext.projectName = escapeJava(programName)
     }
