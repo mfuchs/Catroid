@@ -28,8 +28,7 @@ import java.nio.file.Paths
 import java.util.zip.ZipFile
 
 ext {
-    id = "1" // TODO remove!
-
+    projectId = "g1"
     assetsPath = "src/main/assets/"
     standaloneZipPath = assetsPath + "project.zip"
     standaloneTmpPath = assetsPath + "standalone/"
@@ -41,7 +40,7 @@ ext {
     buildStandaloneInfoTmpPath = "buildStandaloneInfoTmp"
     projectName = 'No Standalone Project'
     manifestAppName = '' // TODO make this happen
-    projectId = 'No Starting Project'
+    startProject = 'No Starting Project'
     appZipFile = null
 }
 
@@ -53,15 +52,16 @@ class StandalonePreparation
 
     StandalonePreparation(String id, String downloadUrl, def project) {
         this.ext = project.ext
+        this.ext.startProject = id
         this.ext.projectId = id
         this.downloadUrl = downloadUrl
         this.projectPath = project.projectDir.absolutePath
         def assetsPath = Paths.get(project.projectDir.absolutePath, this.ext.assetsPath)
-        this.ext.appZipFile = new File("${assetsPath}/${ext.projectId}.zip")
+        this.ext.appZipFile = new File("${assetsPath}/${ext.startProject}.zip")
     }
 
     void execute() {
-        println "Preparing for the Standalone APP $ext.projectId"
+        println "Preparing for the Standalone APP $ext.startProject"
         download()
         determineProjectName()
     }
@@ -118,10 +118,12 @@ task standalonePreparation() {
      */
     doLast {
         println "buildStandalone task triggered"
+        ZipFile app = new ZipFile(project.ext.appZipFile)
+
         adaptManifest(file(project.ext.manifestPath), project.ext.manifestAppName)
-        removeUnecessaryPermissions()
-        adaptGoogleServices(file(project.ext.googleServicesJsonPath), project.ext.projectId)
-        copyScreenshotAsIcon(new ZipFile(project.ext.appZipFile))
+        removeUnecessaryPermissions(app)
+        adaptGoogleServices(file(project.ext.googleServicesJsonPath), project.ext.startProject)
+        copyScreenshotAsIcon(app)
     }
 }
 
@@ -133,12 +135,12 @@ def adaptManifest(File manifest, String appName) {
     manifest.write(text)
 }
 
-def adaptGoogleServices(File googleServices, String projectId) {
+def adaptGoogleServices(File googleServices, String startProject) {
     def text = googleServices.text
 
     // Clean up first to ensure that org.catrobat.catroid.abc does not become org.catrobat.abc.abc after two runs
     def oldName = 'org.catrobat.catroid'
-    def newName = "org.catrobat.catroid.${projectId}"
+    def newName = "org.catrobat.catroid.${startProject}"
     text = text.replaceAll(newName, oldName)
 
     // now change it
@@ -154,23 +156,6 @@ task testremoveIntentFilters() << {
     messUpIntentFilters()
 }
 
-ext.getProjectName = {
-    File xmlFile = file(project.ext.standaloneTmpPath + "code.xml")
-    File standaloneInfoTmpFile = file(project.ext.buildStandaloneInfoTmpPath)
-
-    if (xmlFile.exists()) {
-        String sanitizedXml = xmlFile.text.replaceAll("&#x0;", "")
-        def programNode = new XmlSlurper().parseText(sanitizedXml)
-        return programNode.header.programName.text()
-    } else if (standaloneInfoTmpFile.exists()) {
-        def lines = standaloneInfoTmpFile.readLines()
-        assert 2 == lines.size()
-        return lines[1]
-    }
-
-    return "Default Project"
-}
-
 ext.getPackageNameSuffix = {
     println ':getPackageNameSuffix'
     if (project.hasProperty("suffix")) {
@@ -181,18 +166,18 @@ ext.getPackageNameSuffix = {
     }
 }
 
-def removeUnecessaryPermissions() {
+def removeUnecessaryPermissions(ZipFile appZipFile) {
     println "managing Permissions"
-    File permissionsFile = file(project.ext.standaloneTmpPath + "permissions.txt")
-    File manifestFile = file(project.ext.manifestPath);
-    def manifestText = manifestFile.text;
 
-    if(!permissionsFile.exists()) {
+    def permissionsEntry = appZipFile.getEntry('permissions.txt')
+    if (!permissionsEntry || permissionsEntry.isDirectory()) {
         println "no permissionTXT"
         return
     }
-    def permissionsText = permissionsFile.text
+    def permissionsText = appZipFile.getInputStream(permissionsEntry).text
 
+    File manifestFile = file(project.ext.manifestPath);
+    def manifestText = manifestFile.text;
     def manifestXml = new XmlSlurper().parseText(manifestText)
 
     def permissionsToRemove = []
