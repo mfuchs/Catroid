@@ -27,23 +27,6 @@ import groovy.xml.StreamingMarkupBuilder
 import java.nio.file.Paths
 import java.util.zip.ZipFile
 
-class StandaloneSettings
-{
-    def assetsPath = "src/main/assets/"
-    def standaloneZipPath = assetsPath + "project.zip"
-    def standaloneTmpPath = assetsPath + "standalone/"
-
-    def manifestPath = "src/main/AndroidManifest.xml"
-    def resPath = "src/main/res/drawable-nodpi"
-    def googleServicesJsonPath = "google-services.json"
-
-    def buildStandaloneInfoTmpPath = "buildStandaloneInfoTmp"
-    def projectName = 'No Standalone Project'
-    def manifestAppName = '' // TODO make this happen
-    def projectId = 'No Starting Project'
-    def appZipFile = null
-}
-
 ext {
     id = "1" // TODO remove!
 
@@ -60,13 +43,13 @@ ext {
     manifestAppName = '' // TODO make this happen
     projectId = 'No Starting Project'
     appZipFile = null
-    standaloneSettings = new StandaloneSettings()
 }
 
 class StandalonePreparation
 {
     private def ext
     private String downloadUrl
+    private String projectPath
     private String assetsPath
     private File tempDir
     private File programZip
@@ -80,6 +63,7 @@ class StandalonePreparation
         this.ext = project.ext
         this.ext.projectId = id
         this.downloadUrl = downloadUrl
+        this.projectPath = project.projectDir.absolutePath
         def assetsPath = Paths.get(project.projectDir.absolutePath, this.ext.assetsPath)
         this.ext.appZipFile = new File("${assetsPath}/${ext.projectId}.zip") // TODO check if this works with new
     }
@@ -145,7 +129,6 @@ task standalonePreparation() {
     if (project.hasProperty("download")) {
         new StandalonePreparation(project["suffix"], project["download"], project).execute()
         println "##### B1 $project.ext.projectName $project.ext.appZipFile"
-        println "##### B2 $project.ext.standaloneSettings.projectId"
     }
 
     doLast {
@@ -188,7 +171,13 @@ task standalonePreparation() {
         def googleServicesJsonText = googleServicesJsonFile.text
 
         println "########## C2 " + project.ext.projectId
-        googleServicesJsonText = googleServicesJsonText.replaceAll("org.catrobat.catroid", "org.catrobat.catroid." + project.ext.projectId)
+        // Clean up first to ensure that org.catrobat.catroid.abc does not become org.catrobat.abc.abc after two runs
+        def oldName = 'org.catrobat.catroid'
+        def newName = "org.catrobat.catroid.${project.ext.projectId}"
+        googleServicesJsonText = googleServicesJsonText.replaceAll(newName, oldName)
+
+        // now change it
+        googleServicesJsonText = googleServicesJsonText.replaceAll(oldName, newName)
         googleServicesJsonFile.write(googleServicesJsonText)
 
         copyScreenshotAsIcon()
