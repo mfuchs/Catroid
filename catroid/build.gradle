@@ -114,6 +114,7 @@ android {
             versionCode 1
             versionName '1.0'
 
+            println "####### E1 $projectId $project.ext.projectId"
             buildConfigField "String", "START_PROJECT", "\"$projectId\""
             buildConfigField "String", "PROJECT_NAME", "\"$projectName\"" // TODO above for catroid also use these!
             // here!

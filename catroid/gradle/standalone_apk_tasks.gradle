@@ -26,6 +26,23 @@ import groovy.xml.XmlUtil
 import groovy.xml.StreamingMarkupBuilder
 import java.util.zip.ZipFile
 
+class StandaloneSettings
+{
+    def assetsPath = "src/main/assets/"
+    def standaloneZipPath = assetsPath + "project.zip"
+    def standaloneTmpPath = assetsPath + "standalone/"
+
+    def manifestPath = "src/main/AndroidManifest.xml"
+    def resPath = "src/main/res/drawable-nodpi"
+    def googleServicesJsonPath = "google-services.json"
+
+    def buildStandaloneInfoTmpPath = "buildStandaloneInfoTmp"
+    def projectName = 'No Standalone Project'
+    def manifestAppName = '' // TODO make this happen
+    def projectId = 'No Starting Project'
+    def appZipFile = null
+}
+
 ext {
     id = "1" // TODO remove!
 
@@ -42,6 +59,7 @@ ext {
     manifestAppName = '' // TODO make this happen
     projectId = 'No Starting Project'
     appZipFile = null
+    standaloneSettings = new StandaloneSettings()
 }
 
 class StandalonePreparation
@@ -123,8 +141,9 @@ task standalonePreparation() {
      * already present when the configuration step comes to the android extension.
      */
     if (project.hasProperty("download")) {
-        new StandalonePreparation(project["suffix"], project["download"], ext).execute()
-        println "##### B1 $ext.projectName $ext.appZipFile"
+        new StandalonePreparation(project["suffix"], project["download"], project.ext).execute()
+        println "##### B1 $project.ext.projectName $project.ext.appZipFile"
+        println "##### B2 $project.ext.standaloneSettings.projectId"
     }
 
     doLast {
@@ -140,15 +159,15 @@ task standalonePreparation() {
         println "zipOutDir: " + zipOutDir.absolutePath
 
         // TODO when to use ext and when to use project???????? makes no sense to me!
-        println "##### B2 $ext.appZipFile"
+        println "##### C1 $project.ext.appZipFile"
         copy {
-            from ext.appZipFile
+            from project.ext.appZipFile
             into project.ext.assetsPath
         }
 
         // TODO this is most likely not needed!
         copy {
-            from zipTree(ext.appZipFile)
+            from zipTree(project.ext.appZipFile)
             into zipOutDir
         }
 
@@ -156,12 +175,12 @@ task standalonePreparation() {
         // downloads it itself???
         println "buildStandalone task triggered"
         // TODO use different manifest handling here!
-        println "##### manifest path: ${project.ext.manifestPath} appName: ${ext.manifestAppName}"
+        println "##### manifest path: ${project.ext.manifestPath} appName: ${project.ext.manifestAppName}"
         File manifestFile = file(project.ext.manifestPath)
         println "manifestFile: " + manifestFile.absolutePath
         def manifestText = manifestFile.text
 
-        manifestText = manifestText.replaceAll("@string/app_name", ext.manifestAppName);
+        manifestText = manifestText.replaceAll("@string/app_name", project.ext.manifestAppName);
         manifestText = manifestText.replaceAll("@drawable/ic_launcher", "@drawable/icon");
         manifestFile.write(manifestText)
 
@@ -170,8 +189,8 @@ task standalonePreparation() {
         File googleServicesJsonFile = file(project.ext.googleServicesJsonPath)
         def googleServicesJsonText = googleServicesJsonFile.text
 
-        println "########## C " + ext.projectId
-        googleServicesJsonText = googleServicesJsonText.replaceAll("org.catrobat.catroid", "org.catrobat.catroid." + ext.projectId)
+        println "########## C2 " + project.ext.projectId
+        googleServicesJsonText = googleServicesJsonText.replaceAll("org.catrobat.catroid", "org.catrobat.catroid." + project.ext.projectId)
         googleServicesJsonFile.write(googleServicesJsonText)
 
         copyScreenshotAsIcon()
