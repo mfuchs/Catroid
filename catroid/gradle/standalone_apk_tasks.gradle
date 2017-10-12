@@ -24,6 +24,7 @@
 import groovy.json.StringEscapeUtils
 import groovy.xml.XmlUtil
 import groovy.xml.StreamingMarkupBuilder
+import java.nio.file.Paths
 import java.util.zip.ZipFile
 
 class StandaloneSettings
@@ -71,17 +72,16 @@ class StandalonePreparation
     private File programZip
     private File zipOutDir
 
-    StandalonePreparation(String id, def ext) {
-        this(id, "https://pocketcode.org/download/${id}.catrobat", ext)
+    StandalonePreparation(String id, def project) {
+        this(id, "https://pocketcode.org/download/${id}.catrobat", project)
     }
 
-    StandalonePreparation(String id, String downloadUrl, def ext) {
-        this.ext = ext
+    StandalonePreparation(String id, String downloadUrl, def project) {
+        this.ext = project.ext
         this.ext.projectId = id
         this.downloadUrl = downloadUrl
-        this.tempDir = File.createTempDir()
-        this.tempDir.deleteOnExit() // TODO does this even work?
-        this.ext.appZipFile = new File("${tempDir.absolutePath}/${ext.projectId}.zip") // TODO check if this works with new
+        def assetsPath = Paths.get(project.projectDir.absolutePath, this.ext.assetsPath)
+        this.ext.appZipFile = new File("${assetsPath}/${ext.projectId}.zip") // TODO check if this works with new
     }
 
     void execute() {
@@ -132,7 +132,9 @@ class StandalonePreparation
 
 // TODO this is not actually a task!!!
 task standalonePreparation() {
-    println("########## standlonePreparation")
+    def crapPath = Paths.get(project.projectDir.absolutePath, project.ext.assetsPath)
+    println "##### $crapPath"
+    println("########## standlonePreparation $project.projectDir")
     /*
      * Configuration
      *
@@ -141,7 +143,7 @@ task standalonePreparation() {
      * already present when the configuration step comes to the android extension.
      */
     if (project.hasProperty("download")) {
-        new StandalonePreparation(project["suffix"], project["download"], project.ext).execute()
+        new StandalonePreparation(project["suffix"], project["download"], project).execute()
         println "##### B1 $project.ext.projectName $project.ext.appZipFile"
         println "##### B2 $project.ext.standaloneSettings.projectId"
     }
@@ -160,10 +162,6 @@ task standalonePreparation() {
 
         // TODO when to use ext and when to use project???????? makes no sense to me!
         println "##### C1 $project.ext.appZipFile"
-        copy {
-            from project.ext.appZipFile
-            into project.ext.assetsPath
-        }
 
         // TODO this is most likely not needed!
         copy {
