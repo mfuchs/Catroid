@@ -65,21 +65,21 @@ class StandalonePreparation
     }
 
     void execute() {
-        println "Preparing for the Standalone APP $ext.startProject"
+        println "Preparing for the Standalone app '$ext.startProject'."
         download()
         determineProjectName()
     }
 
     private void download() {
         if (ext.appZipFile.exists()) {
-            println "Using already downloaded app at $ext.appZipFile.absolutePath"
+            println "Using already downloaded app at '$ext.appZipFile.absolutePath'."
             return
         }
-        println "downloading.... " + downloadUrl
+        println "Downloading... " + downloadUrl
         ext.appZipFile.withOutputStream {
             it << new URL(downloadUrl).content
         }
-        println "downloaded to: " + ext.appZipFile.absolutePath
+        println "Downloaded to: " + ext.appZipFile.absolutePath
     }
 
     private void determineProjectName() {
@@ -176,11 +176,11 @@ task testremoveIntentFilters() << {
 }
 
 def removeUnecessaryPermissions(ZipFile appZipFile) {
-    println "managing Permissions"
+    println 'Managing Permissions.'
 
     def permissionsEntry = appZipFile.getEntry('permissions.txt')
     if (!permissionsEntry || permissionsEntry.isDirectory()) {
-        println "no permissionTXT"
+        println 'No permissions.txt file found in the app.'
         return
     }
     def permissionsText = appZipFile.getInputStream(permissionsEntry).text
@@ -234,7 +234,7 @@ def removeUnecessaryPermissions(ZipFile appZipFile) {
 def copyScreenshotAsIcon(ZipFile appZipFile) {
     def screenshotBytes = loadScreenshotBytes(appZipFile)
     if (!screenshotBytes) {
-        println 'Could not find a screenshot'
+        println 'Could not find a screenshot.'
         return
     }
 
@@ -252,7 +252,7 @@ def loadScreenshotBytes(ZipFile zip) {
     for (def entry : screenshots) {
         def bytes = zip.getInputStream(entry).bytes
         if (bytes[0..7] == pngMagicNumber) {
-            println "Found screenshot at '$entry.name'"
+            println "Found screenshot at '$entry.name'."
             return bytes
         }
     }

@@ -100,7 +100,6 @@ android {
     }
 
     productFlavors {
-        println("######### FLAVORS")
         catroid {
             applicationId 'org.catrobat.catroid'
             buildConfigField "String", "START_PROJECT", "\"No Starting Project\""
@@ -114,7 +113,6 @@ android {
             versionCode 1
             versionName '1.0'
 
-            println "####### E1 $projectId $project.ext.projectId"
             buildConfigField "String", "START_PROJECT", "\"$projectId\""
             buildConfigField "String", "PROJECT_NAME", "\"$projectName\""
             // here!
@@ -275,3 +273,15 @@ task copyAndroidNatives() {
     }
 }
 apply plugin: 'com.google.gms.google-services'
+
+/*
+ * Ensure that the assembleStandaloneDebug task does the correct preparation
+ * and clean-up steps necessary for standalone APK creation.
+ */
+tasks.whenTaskAdded { task ->
+    if (task.name == 'preStandaloneDebugBuild') {
+        task.dependsOn 'standalonePreparation'
+    }
+    task
+}
+//tasks.assembleStandaloneDebug.dependsOn(standalonePreparation)
