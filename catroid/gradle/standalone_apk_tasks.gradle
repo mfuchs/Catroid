@@ -28,7 +28,7 @@ import java.nio.file.Paths
 import java.util.zip.ZipFile
 
 ext {
-    projectId = "g1"
+
     assetsPath = "src/main/assets/"
     standaloneZipPath = assetsPath + "project.zip"
     standaloneTmpPath = assetsPath + "standalone/"
@@ -38,9 +38,9 @@ ext {
     googleServicesJsonPath = "google-services.json"
 
     buildStandaloneInfoTmpPath = "buildStandaloneInfoTmp"
-    projectName = 'No Standalone Project'
+    projectId = "genterated824"
+    projectName = 'Pythagorean Theorem'
     manifestAppName = '' // TODO make this happen
-    startProject = 'No Starting Project'
     appZipFile = null
     appZipFileInAssets = null
 }
@@ -53,7 +53,6 @@ class StandalonePreparation
 
     StandalonePreparation(String id, String downloadUrl, def project) {
         this.ext = project.ext
-        this.ext.startProject = id
         this.ext.projectId = id
         this.downloadUrl = downloadUrl
         this.projectPath = project.projectDir.absolutePath
@@ -61,11 +60,11 @@ class StandalonePreparation
         def assetsPath = Paths.get(project.rootDir.absolutePath, this.ext.assetsPath)
         File appsCache = new File("${project.rootDir.absolutePath}/.apps")
         appsCache.mkdirs()
-        this.ext.appZipFile = new File("${appsCache.absolutePath}/${ext.startProject}.zip")
+        this.ext.appZipFile = new File("${appsCache.absolutePath}/${ext.projectId}.zip")
     }
 
     void execute() {
-        println "Preparing for the Standalone app '$ext.startProject'."
+        println "Preparing for the Standalone app '$ext.projectId'."
         download()
         determineProjectName()
     }
@@ -137,12 +136,12 @@ task standalonePreparation() {
             from project.ext.appZipFile
             into project.ext.assetsPath
         }
-        project.ext.appZipFileInAssets = file("$project.ext.assetsPath/${project.ext.startProject}.zip")
+        project.ext.appZipFileInAssets = file("$project.ext.assetsPath/${project.ext.projectId}.zip")
         ZipFile app = new ZipFile(project.ext.appZipFileInAssets)
 
         adaptManifest(file(project.ext.manifestPath), project.ext.manifestAppName)
         removeUnecessaryPermissions(app)
-        adaptGoogleServices(file(project.ext.googleServicesJsonPath), project.ext.startProject)
+        adaptGoogleServices(file(project.ext.googleServicesJsonPath), project.ext.projectId)
         copyScreenshotAsIcon(app)
     }
 }
@@ -160,12 +159,12 @@ def adaptManifest(File manifest, String appName) {
     manifest.write(text)
 }
 
-def adaptGoogleServices(File googleServices, String startProject) {
+def adaptGoogleServices(File googleServices, String projectId) {
     def text = googleServices.text
 
     // Clean up first to ensure that org.catrobat.catroid.abc does not become org.catrobat.abc.abc after two runs
     def oldName = 'org.catrobat.catroid'
-    def newName = "org.catrobat.catroid.${startProject}"
+    def newName = "org.catrobat.catroid.${projectId}"
     text = text.replaceAll(newName, oldName)
 
     // now change it
