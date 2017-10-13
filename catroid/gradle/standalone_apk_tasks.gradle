@@ -28,10 +28,10 @@ import java.nio.file.Paths
 import java.util.zip.ZipFile
 
 ext {
+    appId = 'org.catrobat.catroid'
+    appName = '@string/app_name'
 
     assetsPath = "src/main/assets/"
-    standaloneZipPath = assetsPath + "project.zip"
-    standaloneTmpPath = assetsPath + "standalone/"
 
     manifestPath = "src/main/AndroidManifest.xml"
     resPath = "src/main/res/drawable-nodpi"
@@ -39,7 +39,6 @@ ext {
 
     buildStandaloneInfoTmpPath = "buildStandaloneInfoTmp"
     projectId = "genterated824"
-    projectName = 'Pythagorean Theorem'
     manifestAppName = '' // TODO make this happen
     appZipFile = null
     appZipFileInAssets = null
@@ -54,6 +53,7 @@ class StandalonePreparation
     StandalonePreparation(String id, String downloadUrl, def project) {
         this.ext = project.ext
         this.ext.projectId = id
+        this.ext.appId += ".${id}"
         this.downloadUrl = downloadUrl
         this.projectPath = project.projectDir.absolutePath
 
@@ -89,7 +89,7 @@ class StandalonePreparation
         String programName = programNode.header.programName.text()
 
         ext.manifestAppName = escapeXml(programName)
-        ext.projectName = escapeJava(programName)
+        ext.appName = escapeJava(programName)
     }
 
     private String escapeXml(String text) {
@@ -126,7 +126,7 @@ task standalonePreparation() {
 
         adaptManifest(file(project.ext.manifestPath), project.ext.manifestAppName)
         removeUnecessaryPermissions(app)
-        adaptGoogleServices(file(project.ext.googleServicesJsonPath), project.ext.projectId)
+//        adaptGoogleServices(file(project.ext.googleServicesJsonPath), project.ext.projectId)
         copyScreenshotAsIcon(app)
     }
 }
@@ -139,8 +139,8 @@ task standaloneCleanup() {
 
 def adaptManifest(File manifest, String appName) {
     def text = manifest.text
-    text = text.replaceAll("@string/app_name", appName);
-    text = text.replaceAll("@drawable/ic_launcher", "@drawable/icon");
+//    text = text.replaceAll("@string/app_name", appName);
+    text = text.replaceAll("@drawable/ic_launcher", "@drawable/icon"); // TODO also via manifest replace stuff
     manifest.write(text)
 }
 
