@@ -273,15 +273,3 @@ task copyAndroidNatives() {
     }
 }
 apply plugin: 'com.google.gms.google-services'
-
-/*
- * Ensure that the assembleStandaloneDebug task does the correct preparation
- * and clean-up steps necessary for standalone APK creation.
- */
-tasks.whenTaskAdded { task ->
-    if (task.name == 'preStandaloneDebugBuild') {
-        task.dependsOn 'standalonePreparation'
-    }
-    task
-}
-//tasks.assembleStandaloneDebug.dependsOn(standalonePreparation)

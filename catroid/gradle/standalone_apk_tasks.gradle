@@ -147,6 +147,12 @@ task standalonePreparation() {
     }
 }
 
+task standaloneCleanup() {
+    doLast {
+        delete project.ext.appZipFileInAssets
+    }
+}
+
 def adaptManifest(File manifest, String appName) {
     def text = manifest.text
     text = text.replaceAll("@string/app_name", appName);
@@ -267,4 +273,16 @@ def messUpIntentFilters() {
     String regex = "<intent-filter>\\n.+?<action android:name=\"android.intent.action.(VIEW|GET_CONTENT)(.|\\n)+?</intent-filter>"
     String noIntentManifest = manifestText.replaceAll(regex, "")
     manifestFile.write(noIntentManifest)
+}
+
+/*
+ * Ensure that the assembleStandaloneDebug task does the correct preparation
+ * and clean-up steps necessary for standalone APK creation.
+ */
+tasks.whenTaskAdded { task ->
+    if (task.name == 'preStandaloneDebugBuild') {
+        task.dependsOn 'standalonePreparation'
+    } else if (task.name == 'assembleStandaloneDebug') {
+        task.finalizedBy 'standaloneCleanup'
+    }
 }
