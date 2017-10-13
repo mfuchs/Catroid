@@ -228,7 +228,7 @@ android {
         buildConfigField "String", "GIT_DESCRIBE", "\"${versionName}\""
         buildConfigField "String", "GIT_CURRENT_BRANCH", "\"${getCurrentGitBranch()}\""
         multiDexEnabled true
-        manifestPlaceholders += [appName: appName]
+        manifestPlaceholders += [appName: manifestAppName]
     }
 
     packagingOptions {

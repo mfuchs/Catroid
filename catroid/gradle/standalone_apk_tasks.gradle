@@ -30,16 +30,16 @@ import java.util.zip.ZipFile
 ext {
     appId = 'org.catrobat.catroid'
     appName = '@string/app_name'
+    manifestAppName = '@string/app_name'
 
     assetsPath = "src/main/assets/"
-
     manifestPath = "src/main/AndroidManifest.xml"
     resPath = "src/main/res/drawable-nodpi"
     googleServicesJsonPath = "google-services.json"
 
     buildStandaloneInfoTmpPath = "buildStandaloneInfoTmp"
     projectId = "genterated824"
-    manifestAppName = '' // TODO make this happen
+
     appZipFile = null
     appZipFileInAssets = null
 }
