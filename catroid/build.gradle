@@ -114,7 +114,7 @@ android {
         }
 
         standalone {
-            applicationId "${appId}.${projectId}"
+            applicationId appId
             versionCode 1
             versionName '1.0'
 
