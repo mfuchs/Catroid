@@ -31,6 +31,7 @@ ext {
     appId = 'org.catrobat.catroid'
     appName = '@string/app_name'
     manifestAppName = '@string/app_name'
+    manifestAppIcon = '@drawable/ic_launcher'
 
     assetsPath = "src/main/assets/"
     manifestPath = "src/main/AndroidManifest.xml"
@@ -66,6 +67,7 @@ class StandalonePreparation
         println "Preparing for the Standalone app '$ext.projectId'."
         download()
         determineProjectName()
+        this.ext.manifestAppIcon = '@drawable/icon'
     }
 
     private void download() {
@@ -137,6 +139,7 @@ task standaloneCleanup() {
     }
 }
 
+// TODO remove
 def adaptManifest(File manifest, String appName) {
     def text = manifest.text
 //    text = text.replaceAll("@string/app_name", appName);
@@ -144,6 +147,7 @@ def adaptManifest(File manifest, String appName) {
     manifest.write(text)
 }
 
+// TODO remove
 def adaptGoogleServices(File googleServices, String projectId) {
     def text = googleServices.text
 
