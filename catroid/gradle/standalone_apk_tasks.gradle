@@ -42,6 +42,7 @@ ext {
     manifestAppName = '' // TODO make this happen
     startProject = 'No Starting Project'
     appZipFile = null
+    appZipFileInAssets = null
 }
 
 class StandalonePreparation
@@ -56,8 +57,11 @@ class StandalonePreparation
         this.ext.projectId = id
         this.downloadUrl = downloadUrl
         this.projectPath = project.projectDir.absolutePath
-        def assetsPath = Paths.get(project.projectDir.absolutePath, this.ext.assetsPath)
-        this.ext.appZipFile = new File("${assetsPath}/${ext.startProject}.zip")
+
+        def assetsPath = Paths.get(project.rootDir.absolutePath, this.ext.assetsPath)
+        File appsCache = new File("${project.rootDir.absolutePath}/.apps")
+        appsCache.mkdirs()
+        this.ext.appZipFile = new File("${appsCache.absolutePath}/${ext.startProject}.zip")
     }
 
     void execute() {
@@ -67,6 +71,10 @@ class StandalonePreparation
     }
 
     private void download() {
+        if (ext.appZipFile.exists()) {
+            println "Using already downloaded app at $ext.appZipFile.absolutePath"
+            return
+        }
         println "downloading.... " + downloadUrl
         ext.appZipFile.withOutputStream {
             it << new URL(downloadUrl).content
@@ -119,15 +127,18 @@ task standalonePreparation() {
      */
     if (project.hasProperty("download")) {
         new StandalonePreparation(project["suffix"], project["download"], project).execute()
-        println "##### B1 $project.ext.projectName $project.ext.appZipFile"
     }
 
     /*
      * Actual task
      */
     doLast {
-        println "buildStandalone task triggered"
-        ZipFile app = new ZipFile(project.ext.appZipFile)
+        copy {
+            from project.ext.appZipFile
+            into project.ext.assetsPath
+        }
+        project.ext.appZipFileInAssets = file("$project.ext.assetsPath/${project.ext.startProject}.zip")
+        ZipFile app = new ZipFile(project.ext.appZipFileInAssets)
 
         adaptManifest(file(project.ext.manifestPath), project.ext.manifestAppName)
         removeUnecessaryPermissions(app)
@@ -137,7 +148,6 @@ task standalonePreparation() {
 }
 
 def adaptManifest(File manifest, String appName) {
-    println "manifestFile: " + manifest.absolutePath
     def text = manifest.text
     text = text.replaceAll("@string/app_name", appName);
     text = text.replaceAll("@drawable/ic_launcher", "@drawable/icon");
@@ -163,16 +173,6 @@ task commandlineAdbInstallDebugTest(dependsOn: 'commandlineAdbInstallCatroidDebu
 
 task testremoveIntentFilters() << {
     messUpIntentFilters()
-}
-
-ext.getPackageNameSuffix = {
-    println ':getPackageNameSuffix'
-    if (project.hasProperty("suffix")) {
-        return project["suffix"]
-    } else {
-        //return "standalone"
-        return "g" + getProgramId(false);
-    }
 }
 
 def removeUnecessaryPermissions(ZipFile appZipFile) {
@@ -239,7 +239,6 @@ def copyScreenshotAsIcon(ZipFile appZipFile) {
     }
 
     File icon = file("$project.ext.resPath/icon.png")
-    print(icon)
     icon.setBytes(screenshotBytes)
 }
 
