@@ -37,6 +37,14 @@ repositories {
     maven { url 'https://maven.fabric.io/public' }
 }
 
+ext {
+    appId = 'org.catrobat.catroid'
+    appName = '@string/app_name'
+    manifestAppName = '@string/app_name'
+    manifestAppIcon = '@drawable/ic_launcher'
+}
+
+
 apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
 apply plugin: 'checkstyle'

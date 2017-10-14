@@ -28,11 +28,6 @@ import java.nio.file.Paths
 import java.util.zip.ZipFile
 
 ext {
-    appId = 'org.catrobat.catroid'
-    appName = '@string/app_name'
-    manifestAppName = '@string/app_name'
-    manifestAppIcon = '@drawable/ic_launcher'
-
     assetsPath = "src/main/assets/"
     manifestPath = "src/main/AndroidManifest.xml"
     resPath = "src/main/res/drawable-nodpi"
