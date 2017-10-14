@@ -119,9 +119,6 @@ task standalonePreparation() {
      * Actual task
      */
     doLast {
-        if (!project.ext.appZipFile) {
-            logger.error('You need to provide download and the suffix property when trying to run standalone tasks.')
-        }
         copy {
             from project.ext.appZipFile
             into project.ext.assetsPath
@@ -247,7 +244,7 @@ def messUpIntentFilters() {
  * and clean-up steps necessary for standalone APK creation.
  */
 tasks.whenTaskAdded { task ->
-    if (task.name == 'preStandaloneDebugBuild') {
+    if (task.name == 'prepareStandaloneDebugDependencies') {
         task.dependsOn 'standalonePreparation'
     } else if (task.name == 'assembleStandaloneDebug') {
         task.finalizedBy 'standaloneCleanup'
