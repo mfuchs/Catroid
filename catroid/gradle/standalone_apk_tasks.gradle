@@ -132,6 +132,16 @@ task standaloneCleanup() {
     }
 }
 
+task buildStandalone() {
+    doLast {
+        /*
+         * Present for backwards compatibility with Jenkins jobs.
+         * That way Jenkins jobs can support the older way to generated standalone APKs
+         * and the newer way at the same time.
+         */
+    }
+}
+
 task assembleDebugTest(dependsOn: ':assembleCatroidDebugTest') << {}
 task commandlineAdbInstallDebug(dependsOn: ':commandlineAdbInstallCatroidDebug') << {}
 task commandlineAdbInstallDebugTest(dependsOn: 'commandlineAdbInstallCatroidDebugTest') << {}
