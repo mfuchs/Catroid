@@ -65,6 +65,8 @@ task standalonePreparation() {
      * Actual task
      */
     doLast {
+        backupFile(file(project.ext.iconPath))
+
         copy {
             from project.ext.appZipFile
             into project.ext.assetsPath
@@ -79,14 +81,8 @@ task standalonePreparation() {
 
 task standaloneCleanup() {
     doLast {
+        restoreFile(file(project.ext.iconPath))
         delete project.ext.appZipFileInAssets
-
-        File icon = file(project.ext.iconPath)
-        File iconBak = file(project.ext.iconBakPath)
-        if (iconBak.exists()) {
-            Files.copy(iconBak.toPath(), icon.toPath(), COPY_ATTRIBUTES, REPLACE_EXISTING)
-            delete iconBak
-        }
     }
 }
 
@@ -143,6 +139,19 @@ String escapeXml(String text) {
 
 String escapeJava(String text) {
     StringEscapeUtils.escapeJava(text)
+}
+
+def backupFile(File fileToBackup) {
+    File backup = new File(fileToBackup.parent + '/bak_' + fileToBackup.name)
+    Files.copy(fileToBackup.toPath(), backup.toPath(), COPY_ATTRIBUTES, REPLACE_EXISTING)
+}
+
+def restoreFile(File fileToBackup) {
+    File backup = new File(fileToBackup.parent + '/bak_' + fileToBackup.name)
+    if (backup.exists()) {
+        Files.copy(backup.toPath(), fileToBackup.toPath(), COPY_ATTRIBUTES, REPLACE_EXISTING)
+        delete backup
+    }
 }
 
 def removeUnecessaryPermissions(ZipFile appZipFile) {
@@ -207,7 +216,6 @@ def copyScreenshotAsIcon(ZipFile appZipFile) {
         println 'Could not find a screenshot.'
         return
     }
-    Files.copy(file(project.ext.iconPath).toPath(), file(project.ext.iconBakPath).toPath(), COPY_ATTRIBUTES)
     file(project.ext.iconPath).setBytes(screenshotBytes)
 }
 
