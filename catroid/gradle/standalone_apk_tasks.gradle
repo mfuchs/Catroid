@@ -24,12 +24,16 @@
 import groovy.json.StringEscapeUtils
 import groovy.xml.XmlUtil
 import groovy.xml.StreamingMarkupBuilder
+import java.nio.file.Files
+import static java.nio.file.StandardCopyOption.*
 import java.util.zip.ZipFile
 
 ext {
     assetsPath = "src/main/assets/"
     manifestPath = "src/main/AndroidManifest.xml"
-    resPath = "src/main/res/drawable-nodpi"
+    resPath = 'src/main/res/drawable-nodpi'
+    iconPath = "$resPath/icon.png"
+    iconBakPath = "$resPath/icon_bak.png"
     googleServicesJsonPath = "google-services.json"
 
     buildStandaloneInfoTmpPath = "buildStandaloneInfoTmp"
@@ -76,6 +80,12 @@ task standalonePreparation() {
 task standaloneCleanup() {
     doLast {
         delete project.ext.appZipFileInAssets
+
+        File icon = file(project.ext.iconPath)
+        File iconBak = file(project.ext.iconBakPath)
+        if (iconBak.exists()) {
+            Files.move(iconBak.toPath(), icon.toPath(), REPLACE_EXISTING)
+        }
     }
 }
 
@@ -196,9 +206,8 @@ def copyScreenshotAsIcon(ZipFile appZipFile) {
         println 'Could not find a screenshot.'
         return
     }
-
-    File icon = file("$project.ext.resPath/icon.png")
-    icon.setBytes(screenshotBytes)
+    Files.copy(file(project.ext.iconPath).toPath(), file(project.ext.iconBakPath).toPath())
+    file(project.ext.iconPath).setBytes(screenshotBytes)
 }
 
 def loadScreenshotBytes(ZipFile zip) {
