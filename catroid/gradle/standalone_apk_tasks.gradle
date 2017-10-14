@@ -84,7 +84,8 @@ task standaloneCleanup() {
         File icon = file(project.ext.iconPath)
         File iconBak = file(project.ext.iconBakPath)
         if (iconBak.exists()) {
-            Files.move(iconBak.toPath(), icon.toPath(), REPLACE_EXISTING)
+            Files.copy(iconBak.toPath(), icon.toPath(), COPY_ATTRIBUTES, REPLACE_EXISTING)
+            delete iconBak
         }
     }
 }
@@ -206,7 +207,7 @@ def copyScreenshotAsIcon(ZipFile appZipFile) {
         println 'Could not find a screenshot.'
         return
     }
-    Files.copy(file(project.ext.iconPath).toPath(), file(project.ext.iconBakPath).toPath())
+    Files.copy(file(project.ext.iconPath).toPath(), file(project.ext.iconBakPath).toPath(), COPY_ATTRIBUTES)
     file(project.ext.iconPath).setBytes(screenshotBytes)
 }
 
