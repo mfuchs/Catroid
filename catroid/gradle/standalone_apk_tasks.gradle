@@ -119,6 +119,9 @@ task standalonePreparation() {
      * Actual task
      */
     doLast {
+        if (!project.ext.appZipFile) {
+            logger.error('You need to provide download and the suffix property when trying to run standalone tasks.')
+        }
         copy {
             from project.ext.appZipFile
             into project.ext.assetsPath
@@ -126,9 +129,7 @@ task standalonePreparation() {
         project.ext.appZipFileInAssets = file("$project.ext.assetsPath/${project.ext.projectId}.zip")
         ZipFile app = new ZipFile(project.ext.appZipFileInAssets)
 
-        adaptManifest(file(project.ext.manifestPath), project.ext.manifestAppName)
         removeUnecessaryPermissions(app)
-//        adaptGoogleServices(file(project.ext.googleServicesJsonPath), project.ext.projectId)
         copyScreenshotAsIcon(app)
     }
 }
@@ -137,28 +138,6 @@ task standaloneCleanup() {
     doLast {
         delete project.ext.appZipFileInAssets
     }
-}
-
-// TODO remove
-def adaptManifest(File manifest, String appName) {
-    def text = manifest.text
-//    text = text.replaceAll("@string/app_name", appName);
-    text = text.replaceAll("@drawable/ic_launcher", "@drawable/icon"); // TODO also via manifest replace stuff
-    manifest.write(text)
-}
-
-// TODO remove
-def adaptGoogleServices(File googleServices, String projectId) {
-    def text = googleServices.text
-
-    // Clean up first to ensure that org.catrobat.catroid.abc does not become org.catrobat.abc.abc after two runs
-    def oldName = 'org.catrobat.catroid'
-    def newName = "org.catrobat.catroid.${projectId}"
-    text = text.replaceAll(newName, oldName)
-
-    // now change it
-    text = text.replaceAll(oldName, newName)
-    googleServices.write(text)
 }
 
 task assembleDebugTest(dependsOn: ':assembleCatroidDebugTest') << {}
