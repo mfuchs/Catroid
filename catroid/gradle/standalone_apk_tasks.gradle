@@ -30,7 +30,7 @@ import java.util.zip.ZipFile
 
 ext {
     assetsPath = "src/main/assets/"
-    manifestPath = "src/main/AndroidManifest.xml"
+    manifestPath = 'src/main/AndroidManifest.xml'
     resPath = 'src/main/res/drawable-nodpi'
     iconPath = "$resPath/icon.png"
     iconBakPath = "$resPath/icon_bak.png"
@@ -66,6 +66,7 @@ task standalonePreparation() {
      */
     doLast {
         backupFile(file(project.ext.iconPath))
+        backupFile(file(project.ext.manifestPath))
 
         copy {
             from project.ext.appZipFile
@@ -82,6 +83,7 @@ task standalonePreparation() {
 task standaloneCleanup() {
     doLast {
         restoreFile(file(project.ext.iconPath))
+        restoreFile(file(project.ext.manifestPath))
         delete project.ext.appZipFileInAssets
     }
 }
