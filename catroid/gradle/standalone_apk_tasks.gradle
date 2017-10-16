@@ -117,7 +117,7 @@ def downloadIfNotExisting(URL src, File dest) {
         println "Using already downloaded app at '$dest.absolutePath'."
         return
     }
-    println "Downloading... " + downloadUrl
+    println "Downloading... " + src
     dest.withOutputStream {
         it << src.content
     }
