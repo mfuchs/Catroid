@@ -1,0 +1,136 @@
+#!groovy
+
+pipeline {
+	agent {
+		node { 
+			label 'HardwareSensorBox' 
+		}
+	}
+
+	environment {
+		ANDROID_SDK_ROOT = "/home/catroid/android-sdk-linux"
+		ANDROID_SDK_HOME = "/home/catroid/android-sdk-linux"
+		// This is important, as we want the keep our gradle cache, but we can't share it between containers
+		// the cache could only be shared if the gradle instances could comunicate with each other
+		// imho keeping the cache per executor will have the least space impact
+		//GRADLE_USER_HOME = "/.gradle/${env.EXECUTOR_NUMBER}"
+		// Otherwise user.home returns ? for java applications
+		
+		//JAVA_TOOL_OPTIONS = "-Duser.home=/tmp/"
+
+		// modulename
+		GRADLE_PROJECT_MODULE_NAME = "catroid"
+
+		// APK build output locations
+		APK_LOCATION_DEBUG = "${env.GRADLE_PROJECT_MODULE_NAME}/build/outputs/apk/catroid/debug/catroid-catroid-debug.apk"
+		APK_LOCATION_STANDALONE = "${env.GRADLE_PROJECT_MODULE_NAME}/build/outputs/apk/standalone/debug/catroid-standalone-debug.apk"
+
+		// share.catrob.at
+		//CATROBAT_SHARE_UPLOAD_BRANCH = "develop"
+		//CATROBAT_SHARE_APK_NAME = "org.catrobat.catroid_debug_${env.CATROBAT_SHARE_UPLOAD_BRANCH}_latest.apk"
+
+		// set to any value to debug jenkins_android* scripts
+		ANDROID_EMULATOR_HELPER_DEBUG = ""
+		// Needed for compatibiliby to current Jenkins-wide Envs
+		// Can be removed, once all builds are migrated to Pipeline
+		ANDROID_HOME =  "/home/catroid/android-sdk-linux"
+		ANDROID_SDK_LOCATION = "/home/catroid/android-sdk-linux"
+		ANDROID_NDK = ""
+
+		PYTHONUNBUFFERED = "true"
+	}
+
+	options {
+		timeout(time: 2, unit: 'HOURS')
+		timestamps()
+	}
+
+	stages {
+		stage('Setup Android SDK') {
+			steps {
+				// Install Android SDK
+				lock("update-android-sdk-on-${env.NODE_NAME}") {
+					sh "./buildScripts/build_step_install_android_sdk"
+				}
+			}
+		}
+
+		/* 
+		stage('Static Analysis') {
+			steps {
+				sh "./buildScripts/build_step_run_static_analysis"
+			}
+
+			post {
+				always {
+					pmd         canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: "${env.GRADLE_PROJECT_MODULE_NAME}/build/reports/pmd.xml",        unHealthy: '', unstableTotalAll: '0'
+					checkstyle  canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: "${env.GRADLE_PROJECT_MODULE_NAME}/build/reports/checkstyle.xml", unHealthy: '', unstableTotalAll: '0'
+					androidLint canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: "${env.GRADLE_PROJECT_MODULE_NAME}/build/reports/lint*.xml",      unHealthy: '', unstableTotalAll: '0'
+				}
+			}
+		}
+		*/
+		
+		stage('Unit and Device tests') {
+			steps {
+				
+				sh './gradlew -Pandroid.testInstrumentationRunnerArguments.package=org.catrobat.catroid.uiespresso.testsuites connectedCatroidDebugAndroidTest'
+			}
+
+			post {
+				always {
+					junit '**/*TEST*.xml'
+
+					// stop/kill emulator
+					//sh "./buildScripts/build_helper_stop_emulator"
+					
+				}
+			}
+		}
+		/*
+
+		stage('Standalone-APK') {
+			// It checks that the creation of standalone APKs (APK for a Pocketcode app) works, reducing the risk of breaking gradle changes.
+			// The resulting APK is not verified itself.
+			steps {
+				sh "./buildScripts/build_step_create_standalone_apk"
+				archiveArtifacts "${env.APK_LOCATION_STANDALONE}"
+			}
+		}
+
+		stage('Independent-APK') {
+			// It checks that the job builds with the parameters to have unique APKs, reducing the risk of breaking gradle changes.
+			// The resulting APK is not verified on itself.
+			steps {
+				sh "./buildScripts/build_step_create_independent_apk"
+				stash name: "apk-independent", includes: "${env.APK_LOCATION_DEBUG}"
+				archiveArtifacts "${env.APK_LOCATION_DEBUG}"
+			}
+		}
+
+		stage('Upload to share') {
+			when {
+				branch "${env.CATROBAT_SHARE_UPLOAD_BRANCH}"
+			}
+
+			steps {
+				unstash "apk-independent"
+				script {
+					uploadFileToShare "${env.APK_LOCATION_DEBUG}", "${env.CATROBAT_SHARE_APK_NAME}"
+				}
+			}
+		}
+		*/
+	}
+
+	post {
+		always {
+			step([$class: 'LogParserPublisher', failBuildOnError: true, projectRulePath: 'buildScripts/log_parser_rules', unstableOnWarning: true, useProjectRule: true])
+
+			// Send notifications with standalone=false
+			script {
+				sendNotifications false
+			}
+		}
+	}
+}
