@@ -74,7 +74,7 @@ pipeline {
 		stage('Unit and Device tests') {
 			steps {
 				
-				sh './gradlew -Pandroid.testInstrumentationRunnerArguments.package=org.catrobat.catroid.uiespresso.testsuites connectedCatroidDebugAndroidTest'
+				sh './gradlew -Pandroid.testInstrumentationRunnerArguments.class=org.catrobat.catroid.uiespresso.testsuites.SensorboxTestSuite connectedCatroidDebugAndroidTest'
 			}
 
 			post {
