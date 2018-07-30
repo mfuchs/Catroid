@@ -55,7 +55,7 @@ pipeline {
 		JACOCO_XML = "catroid/build/reports/coverage/catroid/debug/report.xml"
 
 		// place the cobertura xml relative to the source, so that the source can be found
-		JAVA_SRC = "catroid/src/main/java"
+		COBERTURA_XML = "catroid/src/main/java/coverage.xml"
 	}
 
 	options {
@@ -89,20 +89,18 @@ pipeline {
 
 		stage('Unit and Device tests') {
 			steps {
+				sh "rm -rf ${env.GRADLE_PROJECT_MODULE_NAME}/temp-results"
+				sh "mkdir ${env.GRADLE_PROJECT_MODULE_NAME}/temp-results"
+
 				// Run local unit tests
 				sh "./buildScripts/build_step_run_unit_tests__all_tests"
 				// ensure that the following test run does not overwrite the results
-				sh "mv ${env.GRADLE_PROJECT_MODULE_NAME}/build ${env.GRADLE_PROJECT_MODULE_NAME}/build-unittest"
+				sh "mv ${env.GRADLE_PROJECT_MODULE_NAME}/build ${env.GRADLE_PROJECT_MODULE_NAME}/temp-results/build-unittest"
 
 				// Run device tests for package: org.catrobat.catroid.test
 				sh "./buildScripts/build_step_run_tests_on_emulator__test_pkg"
 				// ensure that the following test run does not overwrite the results
-				sh "mv ${env.GRADLE_PROJECT_MODULE_NAME}/build ${env.GRADLE_PROJECT_MODULE_NAME}/build-test-test-pkg"
-
-				// Convert the JaCoCo coverate to the Cobertura XML file format.
-				// This is done since the Jenkins JaCoCo plugin does not work well.
-				// See also JENKINS-212 on jira.catrob.at
-				sh "if [ -e '$JACOCO_XML' ]; then ./buildScripts/cover2cover.py $JACOCO_XML > $JAVA_SRC/coverage1.xml; fi"
+				sh "mv ${env.GRADLE_PROJECT_MODULE_NAME}/build ${env.GRADLE_PROJECT_MODULE_NAME}/temp-results/build-test-test-pkg"
 
 				// Run device tests for class: org.catrobat.catroid.uiespresso.testsuites.PullRequestTriggerSuite
 				sh "./buildScripts/build_step_run_tests_on_emulator__pr_test_suite"
@@ -110,13 +108,13 @@ pipeline {
 				// Convert the JaCoCo coverate to the Cobertura XML file format.
 				// This is done since the Jenkins JaCoCo plugin does not work well.
 				// See also JENKINS-212 on jira.catrob.at
-				sh "if [ -e '$JACOCO_XML' ]; then ./buildScripts/cover2cover.py $JACOCO_XML > $JAVA_SRC/coverage2.xml; fi"
+				sh "if [ -e '$JACOCO_XML' ]; then ./buildScripts/cover2cover.py $JACOCO_XML > $COBERTURA_XML; fi"
 			}
 
 			post {
 				always {
 					junit '**/*TEST*.xml'
-					step([$class: 'CoberturaPublisher', autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: "$JAVA_SRC/coverage*.xml", failUnhealthy: false, failUnstable: false, maxNumberOfBuilds: 0, onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false, failNoReports: false])
+					step([$class: 'CoberturaPublisher', autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: COBERTURA_XML, failUnhealthy: false, failUnstable: false, maxNumberOfBuilds: 0, onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false, failNoReports: false])
 
 					// stop/kill emulator
 					sh "./buildScripts/build_helper_stop_emulator"
