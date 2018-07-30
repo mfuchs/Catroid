@@ -63,13 +63,13 @@ public class BroadcastForDeletedClonesRegressionTest {
 		createProject();
 	}
 
-	@Category({Level.Functional.class, Cat.CatrobatLanguage.class})
-	@Test
-	public void testBroadcastsToDeletedClones() {
-		baseActivityTestRule.launchActivity(null);
-		cloneDeleted.waitUntilEvaluated(3000);
-		broadCastReceived.waitUntilEvaluated(3000);
-	}
+	//@Category({Level.Functional.class, Cat.CatrobatLanguage.class})
+	//@Test
+	//public void testBroadcastsToDeletedClones() {
+		//baseActivityTestRule.launchActivity(null);
+		//cloneDeleted.waitUntilEvaluated(3000);
+		//broadCastReceived.waitUntilEvaluated(3000);
+	//}
 
 	private void createProject() {
 		Project project = new Project(InstrumentationRegistry.getTargetContext(), "BroadcastForDeletedClonesRegressionTest");
