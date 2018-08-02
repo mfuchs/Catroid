@@ -106,13 +106,13 @@ pipeline {
 				//sh "mv ${env.GRADLE_PROJECT_MODULE_NAME}/build ${env.GRADLE_PROJECT_MODULE_NAME}/build-test-test-pkg"
 
 
-				//// Run device tests for class: org.catrobat.catroid.uiespresso.testsuites.PullRequestTriggerSuite
-				//sh "./buildScripts/build_step_run_tests_on_emulator__pr_test_suite"
+				// Run device tests for class: org.catrobat.catroid.uiespresso.testsuites.PullRequestTriggerSuite
+				sh "./buildScripts/build_step_run_tests_on_emulator__pr_test_suite"
 
-				//// Convert the JaCoCo coverate to the Cobertura XML file format.
-				//// This is done since the Jenkins JaCoCo plugin does not work well.
-				//// See also JENKINS-212 on jira.catrob.at
-				//sh "if [ -e '$JACOCO_XML' ]; then ./buildScripts/cover2cover.py $JACOCO_XML > $JAVA_SRC/coverage2.xml; fi"
+				// Convert the JaCoCo coverate to the Cobertura XML file format.
+				// This is done since the Jenkins JaCoCo plugin does not work well.
+				// See also JENKINS-212 on jira.catrob.at
+				sh "if [ -e '$JACOCO_XML' ]; then ./buildScripts/cover2cover.py $JACOCO_XML > $JAVA_SRC/coverage2.xml; fi"
 			}
 
 			post {
