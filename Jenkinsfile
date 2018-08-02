@@ -66,13 +66,14 @@ pipeline {
 	stages {
 		state('Cleanup') {
 			// Files like the coverage-xml-reports need to be cleaned as they can cause
-			// wrong static analysis matches.
+			// wrong static analysis failures.
 			//
-			// git clean is not called with -x, thus the build directory is not removed.
+			// git clean is not called with -x (removes everything, even things listed in .gitignore).
+			// Therefore the build directory is not removed.
 			// Respecting the gitignore file is still a good idea, since it avoids files that
 			// can be kept for builds, like the avd.
 			// Thus a gradle clean still makes sense to remove the build directory etc.
-			sh 'git clean -fd
+			sh 'git clean -fd'
 			sh './gradlew clean'
 		}
 
