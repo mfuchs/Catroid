@@ -73,6 +73,11 @@ if (project.hasProperty('independent')) {
 ant.copy(file: 'google-services-template.json', tofile: 'google-services.json', overwrite: true)
 ant.replace(file: 'google-services.json', token: '@appId@', value: appId)
 
+
+jacoco {
+    toolVersion = "0.8.1"
+}
+
 android {
     dexOptions {
         javaMaxHeapSize "4g"
