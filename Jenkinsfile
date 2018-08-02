@@ -64,6 +64,10 @@ pipeline {
 	}
 
 	stages {
+		state('Cleanup') {
+			sh "rm -f $JAVA_SRC/coverage1.xml $JAVA_SRC/coverage2.xml"
+		}
+
 		stage('Setup Android SDK') {
 			steps {
 				// Install Android SDK
@@ -89,8 +93,6 @@ pipeline {
 
 		stage('Unit and Device tests') {
 			steps {
-				sh "rm -f $JAVA_SRC/coverage1.xml $JAVA_SRC/coverage2.xml"
-
 				// Run local unit tests
 				sh "./buildScripts/build_step_run_unit_tests__all_tests"
 				// ensure that the following test run does not overwrite the results
