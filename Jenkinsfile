@@ -65,7 +65,15 @@ pipeline {
 
 	stages {
 		state('Cleanup') {
-			sh "rm -f $JAVA_SRC/coverage1.xml $JAVA_SRC/coverage2.xml"
+			// Files like the coverage-xml-reports need to be cleaned as they can cause
+			// wrong static analysis matches.
+			//
+			// git clean is not called with -x, thus the build directory is not removed.
+			// Respecting the gitignore file is still a good idea, since it avoids files that
+			// can be kept for builds, like the avd.
+			// Thus a gradle clean still makes sense to remove the build directory etc.
+			sh 'git clean -fd
+			sh './gradlew clean'
 		}
 
 		stage('Setup Android SDK') {
