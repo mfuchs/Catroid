@@ -73,36 +73,38 @@ pipeline {
 			}
 		}
 
-		stage('Static Analysis') {
-			steps {
-				sh "./buildScripts/build_step_run_static_analysis"
-			}
+		//stage('Static Analysis') {
+			//steps {
+				//sh "./buildScripts/build_step_run_static_analysis"
+			//}
 
-			post {
-				always {
-					pmd         canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: "${env.GRADLE_PROJECT_MODULE_NAME}/build/reports/pmd.xml",        unHealthy: '', unstableTotalAll: '0'
-					checkstyle  canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: "${env.GRADLE_PROJECT_MODULE_NAME}/build/reports/checkstyle.xml", unHealthy: '', unstableTotalAll: '0'
-					androidLint canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: "${env.GRADLE_PROJECT_MODULE_NAME}/build/reports/lint*.xml",      unHealthy: '', unstableTotalAll: '0'
-				}
-			}
-		}
+			//post {
+				//always {
+					//pmd         canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: "${env.GRADLE_PROJECT_MODULE_NAME}/build/reports/pmd.xml",        unHealthy: '', unstableTotalAll: '0'
+					//checkstyle  canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: "${env.GRADLE_PROJECT_MODULE_NAME}/build/reports/checkstyle.xml", unHealthy: '', unstableTotalAll: '0'
+					//androidLint canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: "${env.GRADLE_PROJECT_MODULE_NAME}/build/reports/lint*.xml",      unHealthy: '', unstableTotalAll: '0'
+				//}
+			//}
+		//}
 
 		stage('Unit and Device tests') {
 			steps {
-				// Run local unit tests
-				sh "./buildScripts/build_step_run_unit_tests__all_tests"
-				// ensure that the following test run does not overwrite the results
-				sh "mv ${env.GRADLE_PROJECT_MODULE_NAME}/build ${env.GRADLE_PROJECT_MODULE_NAME}/build-unittest"
+				sh "rm -f $JAVA_SRC/coverage1.xml $JAVA_SRC/coverage2.xml"
 
-				// Run device tests for package: org.catrobat.catroid.test
-				sh "./buildScripts/build_step_run_tests_on_emulator__test_pkg"
-				// ensure that the following test run does not overwrite the results
-				sh "mv ${env.GRADLE_PROJECT_MODULE_NAME}/build ${env.GRADLE_PROJECT_MODULE_NAME}/build-test-test-pkg"
+				//// Run local unit tests
+				//sh "./buildScripts/build_step_run_unit_tests__all_tests"
+				//// ensure that the following test run does not overwrite the results
+				//sh "mv ${env.GRADLE_PROJECT_MODULE_NAME}/build ${env.GRADLE_PROJECT_MODULE_NAME}/build-unittest"
 
-				// Convert the JaCoCo coverate to the Cobertura XML file format.
-				// This is done since the Jenkins JaCoCo plugin does not work well.
-				// See also JENKINS-212 on jira.catrob.at
-				sh "if [ -e '$JACOCO_XML' ]; then ./buildScripts/cover2cover.py $JACOCO_XML > $JAVA_SRC/coverage1.xml; fi"
+				//// Run device tests for package: org.catrobat.catroid.test
+				//sh "./buildScripts/build_step_run_tests_on_emulator__test_pkg"
+				//// ensure that the following test run does not overwrite the results
+				//sh "mv ${env.GRADLE_PROJECT_MODULE_NAME}/build ${env.GRADLE_PROJECT_MODULE_NAME}/build-test-test-pkg"
+
+				//// Convert the JaCoCo coverate to the Cobertura XML file format.
+				//// This is done since the Jenkins JaCoCo plugin does not work well.
+				//// See also JENKINS-212 on jira.catrob.at
+				//sh "if [ -e '$JACOCO_XML' ]; then ./buildScripts/cover2cover.py $JACOCO_XML > $JAVA_SRC/coverage1.xml; fi"
 
 				// Run device tests for class: org.catrobat.catroid.uiespresso.testsuites.PullRequestTriggerSuite
 				sh "./buildScripts/build_step_run_tests_on_emulator__pr_test_suite"
@@ -124,47 +126,47 @@ pipeline {
 			}
 		}
 
-		stage('Standalone-APK') {
-			// It checks that the creation of standalone APKs (APK for a Pocketcode app) works, reducing the risk of breaking gradle changes.
-			// The resulting APK is not verified itself.
-			steps {
-				sh "./buildScripts/build_step_create_standalone_apk"
-				archiveArtifacts "${env.APK_LOCATION_STANDALONE}"
-			}
-		}
+		//stage('Standalone-APK') {
+			//// It checks that the creation of standalone APKs (APK for a Pocketcode app) works, reducing the risk of breaking gradle changes.
+			//// The resulting APK is not verified itself.
+			//steps {
+				//sh "./buildScripts/build_step_create_standalone_apk"
+				//archiveArtifacts "${env.APK_LOCATION_STANDALONE}"
+			//}
+		//}
 
-		stage('Independent-APK') {
-			// It checks that the job builds with the parameters to have unique APKs, reducing the risk of breaking gradle changes.
-			// The resulting APK is not verified on itself.
-			steps {
-				sh "./buildScripts/build_step_create_independent_apk"
-				stash name: "apk-independent", includes: "${env.APK_LOCATION_DEBUG}"
-				archiveArtifacts "${env.APK_LOCATION_DEBUG}"
-			}
-		}
+		//stage('Independent-APK') {
+			//// It checks that the job builds with the parameters to have unique APKs, reducing the risk of breaking gradle changes.
+			//// The resulting APK is not verified on itself.
+			//steps {
+				//sh "./buildScripts/build_step_create_independent_apk"
+				//stash name: "apk-independent", includes: "${env.APK_LOCATION_DEBUG}"
+				//archiveArtifacts "${env.APK_LOCATION_DEBUG}"
+			//}
+		//}
 
-		stage('Upload to share') {
-			when {
-				branch "${env.CATROBAT_SHARE_UPLOAD_BRANCH}"
-			}
+		//stage('Upload to share') {
+			//when {
+				//branch "${env.CATROBAT_SHARE_UPLOAD_BRANCH}"
+			//}
 
-			steps {
-				unstash "apk-independent"
-				script {
-					uploadFileToShare "${env.APK_LOCATION_DEBUG}", "${env.CATROBAT_SHARE_APK_NAME}"
-				}
-			}
-		}
+			//steps {
+				//unstash "apk-independent"
+				//script {
+					//uploadFileToShare "${env.APK_LOCATION_DEBUG}", "${env.CATROBAT_SHARE_APK_NAME}"
+				//}
+			//}
+		//}
 	}
 
-	post {
-		always {
-			step([$class: 'LogParserPublisher', failBuildOnError: true, projectRulePath: 'buildScripts/log_parser_rules', unstableOnWarning: true, useProjectRule: true])
+	//post {
+		//always {
+			//step([$class: 'LogParserPublisher', failBuildOnError: true, projectRulePath: 'buildScripts/log_parser_rules', unstableOnWarning: true, useProjectRule: true])
 
-			// Send notifications with standalone=false
-			script {
-				sendNotifications false
-			}
-		}
-	}
+			//// Send notifications with standalone=false
+			//script {
+				//sendNotifications false
+			//}
+		//}
+	//}
 }
