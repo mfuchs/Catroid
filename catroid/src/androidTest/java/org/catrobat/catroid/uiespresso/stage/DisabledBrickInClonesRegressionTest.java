@@ -96,11 +96,11 @@ public class DisabledBrickInClonesRegressionTest {
 		lastBrickInScript = ScriptEvaluationGateBrick.appendToScript(whenClonedScript);
 	}
 
-	//@Category({Level.Functional.class, Cat.CatrobatLanguage.class})
-	//@Test
-	//public void setVariableInCloneShouldNotBeExecutedTest() {
-		//baseActivityTestRule.launchActivity();
-		//lastBrickInScript.waitUntilEvaluated(3000);
-		//assertUserVariableEqualsWithTimeout(userVariable, 1D, 2000);
-	//}
+	@Category({Level.Functional.class, Cat.CatrobatLanguage.class})
+	@Test
+	public void setVariableInCloneShouldNotBeExecutedTest() {
+		baseActivityTestRule.launchActivity();
+		lastBrickInScript.waitUntilEvaluated(3000);
+		assertUserVariableEqualsWithTimeout(userVariable, 1D, 2000);
+	}
 }
