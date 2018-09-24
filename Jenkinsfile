@@ -1,7 +1,5 @@
 #!groovy
 
-String cron_string = env.BRANCH_NAME == "JENKINS-243_2" ? "@hourly" : "*/5 * * * *"
-
 pipeline {
 	agent {
 		dockerfile {
@@ -69,10 +67,6 @@ pipeline {
 		timeout(time: 2, unit: 'HOURS')
 		timestamps()
 		buildDiscarder(logRotator(numToKeepStr: '30'))
-	}
-
-	triggers {
-		cron(cron_string)
 	}
 
 	stages {
