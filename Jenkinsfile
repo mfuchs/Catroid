@@ -70,7 +70,7 @@ pipeline {
 	}
 
 	triggers {
-		cron(env.BRANCH_NAME == 'JENKINS-243_2' ? '*/5 * * * *' : '')
+		cron(env.BRANCH_NAME == 'JENKINS-243_2' ? '*/5 * * * *' : env.BRANCH_NAME)
 	}
 
 	stages {
