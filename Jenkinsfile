@@ -1,6 +1,6 @@
 #!groovy
 
-String cron_string = BRANCH_NAME == "JENKINS-243_2" ? "@hourly" : "*/5 * * * *"
+String cron_string = env.BRANCH_NAME == "JENKINS-243_2" ? "@hourly" : "*/5 * * * *"
 
 pipeline {
 	agent {
