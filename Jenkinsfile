@@ -1,5 +1,7 @@
 #!groovy
 
+String cron_string = BRANCH_NAME == "JENKINS-243_2" ? "@hourly" : "*/5 * * * *"
+
 pipeline {
 	agent {
 		dockerfile {
@@ -70,7 +72,7 @@ pipeline {
 	}
 
 	triggers {
-		cron(env.BRANCH_NAME == 'JENKINS-243_2' ? '*/5 * * * *' : env.BRANCH_NAME)
+		cron(cron_string)
 	}
 
 	stages {
