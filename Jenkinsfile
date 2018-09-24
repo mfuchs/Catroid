@@ -78,6 +78,7 @@ pipeline {
 	stages {
 		stage('Setup Android SDK') {
 			steps {
+				echo "################ $BRANCH_NAME"
 				// Install Android SDK
 				lock("update-android-sdk-on-${env.NODE_NAME}") {
 					sh "./buildScripts/build_step_install_android_sdk"
