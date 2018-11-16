@@ -12,6 +12,7 @@ pipeline {
         // Deprecated: Still used by the used gradle version, once gradle respects ANDROID_SDK_ROOT, this can be removed
         ANDROID_HOME = "${ANDROID_SDK_LOCATION}"
         ANDROID_SDK_LOCATION = "${ANDROID_SDK_LOCATION}"
+        ANDROID_SERIAL = 'PMF4C17630006545'
     }
 
     options {
@@ -31,6 +32,7 @@ pipeline {
 
         stage('Unit and Device tests') {
             steps {
+                echo "#### USING $ANDROID_SERIAL"
                 lock("run-sensorbox-tests-on-${env.NODE_NAME}") {
                     sh './gradlew -Pandroid.testInstrumentationRunnerArguments.class=org.catrobat.catroid.uiespresso.testsuites.SensorboxTestSuite connectedCatroidDebugAndroidTest'
                 }
