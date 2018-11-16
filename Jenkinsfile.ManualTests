@@ -40,6 +40,8 @@ pipeline {
 		// Otherwise user.home returns ? for java applications
 		JAVA_TOOL_OPTIONS = "-Duser.home=/tmp/"
 
+                ANDROID_SERIAL = 'PMF4C17630006545'
+
 		//////// Build specific variables ////////
 		//////////// May be edited by the developer on changing the build steps
 	}
