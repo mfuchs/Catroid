@@ -74,6 +74,7 @@ pipeline {
 				// Install Android SDK
 				lock("robo-arm-devices", variable: 'ANDROID_SERIAL') {
 					sh '#####1 $ANDROID_SERIAL'
+					sh 'sleep 10'
 				}
 				sh '#####2 $ANDROID_SERIAL'
 			}
