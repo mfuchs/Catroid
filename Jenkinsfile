@@ -21,6 +21,7 @@ pipeline {
 			// As android-sdk was used from the beginning and is already 'released' this can't be changed
 			// to eg android-sdk-ndk-r16b and must be kept to the previously used value
 			args "--device /dev/kvm:/dev/kvm -v /var/local/container_shared/gradle/:/.gradle -v /var/local/container_shared/android-sdk-ndk-latest:/usr/local/android-sdk -v /var/local/container_shared/android-home:/.android -v /var/local/container_shared/emulator_console_auth_token:/.emulator_console_auth_token -v /var/local/container_shared/analytics.settings:/analytics.settings"
+                        label "Slave1-HardwareSensorBox"
 		}
 	}
 
@@ -71,116 +72,13 @@ pipeline {
 		stage('Setup Android SDK') {
 			steps {
 				// Install Android SDK
-				lock("update-android-sdk-on-${env.NODE_NAME}") {
-					sh './gradlew -PinstallSdk'
+				lock("robo-arm-devices", variable: 'ANDROID_SERIAL') {
+					sh '#####1 $ANDROID_SERIAL'
 				}
+				sh '#####2 $ANDROID_SERIAL'
 			}
 		}
 
-		stage('Static Analysis') {
-			steps {
-				sh './gradlew pmd checkstyle lint'
-			}
-
-			post {
-				always {
-					pmd         canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: "${env.GRADLE_PROJECT_MODULE_NAME}/build/reports/pmd.xml",        unHealthy: '', unstableTotalAll: '0'
-					checkstyle  canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: "${env.GRADLE_PROJECT_MODULE_NAME}/build/reports/checkstyle.xml", unHealthy: '', unstableTotalAll: '0'
-					androidLint canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: "${env.GRADLE_PROJECT_MODULE_NAME}/build/reports/lint*.xml",      unHealthy: '', unstableTotalAll: '0'
-				}
-			}
-		}
-
-		stage('Unit and Device tests') {
-			steps {
-				// Run local unit tests
-				sh './gradlew -PenableCoverage jacocoTestCatroidDebugUnitTestReport'
-				// Convert the JaCoCo coverate to the Cobertura XML file format.
-				// This is done since the Jenkins JaCoCo plugin does not work well.
-				// See also JENKINS-212 on jira.catrob.at
-				sh "if [ -f '$JACOCO_UNIT_XML' ]; then ./buildScripts/cover2cover.py $JACOCO_UNIT_XML > $JAVA_SRC/coverage1.xml; fi"
-
-				// Run device tests for package: org.catrobat.catroid.test
-				sh '''./gradlew -PenableCoverage -Pemulator=android24 startEmulator createCatroidDebugAndroidTestCoverageReport \
-							-Pandroid.testInstrumentationRunnerArguments.package=org.catrobat.catroid.test'''
-				// Convert the JaCoCo coverate to the Cobertura XML file format.
-				// This is done since the Jenkins JaCoCo plugin does not work well.
-				// See also JENKINS-212 on jira.catrob.at
-				sh "if [ -f '$JACOCO_XML' ]; then ./buildScripts/cover2cover.py $JACOCO_XML > $JAVA_SRC/coverage2.xml; fi"
-				// ensure that the following test run does not overwrite the results
-				sh "mv ${env.GRADLE_PROJECT_MODULE_NAME}/build/outputs/androidTest-results ${env.GRADLE_PROJECT_MODULE_NAME}/build/outputs/androidTest-results1"
-
-				// Run device tests for class: org.catrobat.catroid.uiespresso.testsuites.PullRequestTriggerSuite
-				sh '''./gradlew -PenableCoverage -Pemulator=android24 startEmulator createCatroidDebugAndroidTestCoverageReport \
-							-Pandroid.testInstrumentationRunnerArguments.class=org.catrobat.catroid.uiespresso.testsuites.PullRequestTriggerSuite'''
-				// Convert the JaCoCo coverate to the Cobertura XML file format.
-				// This is done since the Jenkins JaCoCo plugin does not work well.
-				// See also JENKINS-212 on jira.catrob.at
-				sh "if [ -f '$JACOCO_XML' ]; then ./buildScripts/cover2cover.py $JACOCO_XML > $JAVA_SRC/coverage3.xml; fi"
-				// ensure that the following test run does not overwrite the results
-				sh "mv ${env.GRADLE_PROJECT_MODULE_NAME}/build/outputs/androidTest-results ${env.GRADLE_PROJECT_MODULE_NAME}/build/outputs/androidTest-results2"
-			}
-
-			post {
-				always {
-					sh './gradlew stopEmulator clearAvdStore'
-					archiveArtifacts 'logcat.txt'
-				}
-			}
-		}
-
-		stage('Quarantined Tests') {
-			when {
-				expression { isJobStartedByTimer() }
-			}
-
-			steps {
-				sh '''./gradlew -PenableCoverage -PlogcatFile=quarantined_logcat.txt -Pemulator=android24 \
-							startEmulator createCatroidDebugAndroidTestCoverageReport \
-							-Pandroid.testInstrumentationRunnerArguments.class=org.catrobat.catroid.uiespresso.testsuites.QuarantineTestSuite'''
-				archiveArtifacts "$JACOCO_XML"
-				sh "if [ -f '$JACOCO_XML' ]; then ./buildScripts/cover2cover.py $JACOCO_XML > $JAVA_SRC/coverage4.xml; fi"
-
-			}
-
-			post {
-				always {
-					sh './gradlew stopEmulator clearAvdStore'
-					archiveArtifacts 'quarantined_logcat.txt'
-				}
-			}
-		}
-
-		stage('Standalone-APK') {
-			// It checks that the creation of standalone APKs (APK for a Pocketcode app) works, reducing the risk of breaking gradle changes.
-			// The resulting APK is not verified itself.
-			steps {
-				sh '''./gradlew assembleStandaloneDebug -Papk_generator_enabled=true -Psuffix=generated817.catrobat \
-							-Pdownload='https://share.catrob.at/pocketcode/download/817.catrobat' '''
-				archiveArtifacts "${env.APK_LOCATION_STANDALONE}"
-			}
-		}
-
-		stage('Independent-APK') {
-			// It checks that the job builds with the parameters to have unique APKs, reducing the risk of breaking gradle changes.
-			// The resulting APK is not verified on itself.
-			steps {
-				sh "./gradlew assembleCatroidDebug -Pindependent='Code Nightly #$BUILD_NUMBER'"
-				archiveArtifacts "${env.APK_LOCATION_DEBUG}"
-			}
-		}
 	}
 
-	post {
-		always {
-			junit '**/*TEST*.xml'
-			cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: "$JAVA_SRC/coverage*.xml", failUnhealthy: false, failUnstable: false, maxNumberOfBuilds: 0, onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false, failNoReports: false
-			step([$class: 'LogParserPublisher', failBuildOnError: true, projectRulePath: 'buildScripts/log_parser_rules', unstableOnWarning: true, useProjectRule: true])
-
-			// Send notifications with standalone=false
-			script {
-				sendNotifications false
-			}
-		}
-	}
 }
