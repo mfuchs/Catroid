@@ -65,6 +65,7 @@
     <dimen name="dialog_content_area_padding_top">18dp</dimen>
     <dimen name="dialog_content_area_padding">24dp</dimen>
     <dimen name="dialog_content_area_padding_input">20dp</dimen>
+    <dimen name="dialog_text_input_padding_small">-10dp</dimen>
 
     <!-- RecyclerView ViewHolder -->
     <dimen name="view_holder_height">90dp</dimen>

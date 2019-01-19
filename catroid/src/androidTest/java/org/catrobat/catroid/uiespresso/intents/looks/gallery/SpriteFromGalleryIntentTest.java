@@ -45,6 +45,7 @@ import org.catrobat.catroid.ui.ProjectActivity;
 import org.catrobat.catroid.uiespresso.testsuites.Cat;
 import org.catrobat.catroid.uiespresso.testsuites.Level;
 import org.catrobat.catroid.uiespresso.util.UiTestUtils;
+import org.catrobat.catroid.uiespresso.util.actions.CustomActions;
 import org.catrobat.catroid.uiespresso.util.rules.BaseActivityInstrumentationRule;
 import org.catrobat.catroid.utils.PathBuilder;
 import org.hamcrest.Matcher;
@@ -67,6 +68,7 @@ import static android.support.test.espresso.intent.matcher.IntentMatchers.hasAct
 import static android.support.test.espresso.intent.matcher.IntentMatchers.hasExtras;
 import static android.support.test.espresso.intent.matcher.IntentMatchers.hasType;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
@@ -154,6 +156,10 @@ public class SpriteFromGalleryIntentTest {
 
 		onView(withText(R.string.new_sprite_dialog_title))
 				.check(matches(isDisplayed()));
+
+		onView(isRoot())
+				.perform(CustomActions.wait(500));
+
 		onView(withText(R.string.ok))
 				.perform(click());
 

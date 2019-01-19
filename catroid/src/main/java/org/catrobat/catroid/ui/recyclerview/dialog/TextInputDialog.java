@@ -31,6 +31,8 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
+import android.view.WindowManager;
+import android.widget.LinearLayout;
 
 import org.catrobat.catroid.R;
 
@@ -84,6 +86,7 @@ public final class TextInputDialog extends AlertDialog {
 		@Override
 		public AlertDialog create() {
 			final AlertDialog alertDialog = super.create();
+			alertDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
 			alertDialog.setOnShowListener(new OnShowListener() {
 				@Override
@@ -92,6 +95,12 @@ public final class TextInputDialog extends AlertDialog {
 					textInputLayout.setHint(hint);
 					textInputLayout.getEditText().setText(text);
 					textInputLayout.getEditText().selectAll();
+
+					LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+							LinearLayout.LayoutParams.WRAP_CONTENT);
+					layoutParams.setMargins(0, -15, 0, 2);
+					alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setLayoutParams(layoutParams);
+					alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setLayoutParams(layoutParams);
 
 					if (textWatcher != null) {
 						textInputLayout.getEditText().addTextChangedListener(textWatcher);
