@@ -34,7 +34,7 @@ def junitAndCoverage(String jacocoXmlFile, String coverageName, String javaSrcLo
     // Convert the JaCoCo coverate to the Cobertura XML file format.
     // This is done since the Jenkins JaCoCo plugin does not work well.
     // See also JENKINS-212 on jira.catrob.at
-    //sh "./buildScripts/cover2cover.py '$jacocoXmlFile' '$coverageFile'"
+    sh "./buildScripts/cover2cover.py '$jacocoXmlFile' '$coverageFile'"
     cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: coverageFile, failUnhealthy: false, failUnstable: false, maxNumberOfBuilds: 0, onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false, failNoReports: false
 }
 
