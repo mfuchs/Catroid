@@ -34,7 +34,8 @@ def junitAndCoverage(String jacocoXmlFile, String coverageName, String javaSrcLo
     // Convert the JaCoCo coverate to the Cobertura XML file format.
     // This is done since the Jenkins JaCoCo plugin does not work well.
     // See also JENKINS-212 on jira.catrob.at
-    sh "./buildScripts/cover2cover.py '$jacocoXmlFile' '$coverageFile'"
+    //sh "./buildScripts/cover2cover.py '$jacocoXmlFile' '$coverageFile'"
+    cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: coverageFile, failUnhealthy: false, failUnstable: false, maxNumberOfBuilds: 0, onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false, failNoReports: false
 }
 
 def postEmulator(String coverageNameAndLogcatPrefix, String javaSrcLocation) {
@@ -155,7 +156,6 @@ pipeline {
 
                     post {
                         always {
-                            stash name: 'coverage1', includes: "$javaSrc/coverage*.xml", allowEmpty: true
                             stash name: 'logParserRules', includes: 'buildScripts/log_parser_rules'
                         }
                     }
@@ -187,12 +187,6 @@ pipeline {
                             }
                         }
                     }
-
-                    post {
-                        always {
-                            stash name: 'coverage2', includes: "$javaSrc/coverage*.xml", allowEmpty: true
-                        }
-                    }
                 }
             }
         }
@@ -209,9 +203,7 @@ pipeline {
             }
 
             steps {
-                unstash 'coverage1'
-                unstash 'coverage2'
-                cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: "$javaSrc/coverage*.xml", failUnhealthy: false, failUnstable: false, maxNumberOfBuilds: 0, onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false, failNoReports: false
+                echo 'Foo'
             }
         }
     }
