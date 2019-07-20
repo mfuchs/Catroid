@@ -38,6 +38,7 @@ import org.catrobat.catroid.ProjectManager;
 import org.catrobat.catroid.R;
 import org.catrobat.catroid.content.Sprite;
 import org.catrobat.catroid.formulaeditor.Formula;
+import org.catrobat.catroid.formulaeditor.FormulaElement;
 import org.catrobat.catroid.formulaeditor.InterpretationException;
 import org.catrobat.catroid.ui.fragment.FormulaEditorFragment;
 import org.catrobat.catroid.utils.Utils;
@@ -151,6 +152,10 @@ public abstract class FormulaBrick extends BrickBaseType implements View.OnClick
 
 	public BrickField getDefaultBrickField() {
 		return formulaMap.keys().nextElement();
+	}
+
+	boolean isBrickFieldANumber(BrickField brickField) {
+		return getFormulaWithBrickField(brickField).getRoot().getElementType() == FormulaElement.ElementType.NUMBER;
 	}
 
 	public View getCustomView(Context context) {

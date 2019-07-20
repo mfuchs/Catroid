@@ -33,7 +33,6 @@ import org.catrobat.catroid.content.actions.ScriptSequenceAction;
 import org.catrobat.catroid.content.strategy.ShowColorPickerFormulaEditorStrategy;
 import org.catrobat.catroid.content.strategy.ShowFormulaEditorStrategy;
 import org.catrobat.catroid.formulaeditor.Formula;
-import org.catrobat.catroid.formulaeditor.FormulaElement;
 import org.catrobat.catroid.formulaeditor.InterpretationException;
 import org.catrobat.catroid.ui.UiUtils;
 import org.catrobat.catroid.ui.fragment.ColorSeekbar;
@@ -100,10 +99,6 @@ public class SetPenColorBrick extends FormulaBrick {
 		return isBrickFieldANumber(BrickField.PEN_COLOR_RED)
 				&& isBrickFieldANumber(BrickField.PEN_COLOR_GREEN)
 				&& isBrickFieldANumber(BrickField.PEN_COLOR_BLUE);
-	}
-
-	private boolean isBrickFieldANumber(BrickField brickField) {
-		return getFormulaWithBrickField(brickField).getRoot().getElementType() == FormulaElement.ElementType.NUMBER;
 	}
 
 	@Override
