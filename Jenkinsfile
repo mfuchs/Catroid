@@ -81,7 +81,7 @@ pipeline {
                             dir d.dir
                             additionalBuildArgs d.buildArgs
                             args d.args
-                            label useDebugLabelParameter(d.label)
+                            label 'Slave2_emulator'
                         }
                     }
 
@@ -199,7 +199,7 @@ pipeline {
                             dir d.dir
                             additionalBuildArgs d.buildArgs
                             args d.args
-                            label useDebugLabelParameter(d.label)
+                            label 'Slave3_emulator'
                         }
                     }
 
