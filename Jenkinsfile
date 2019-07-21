@@ -81,7 +81,7 @@ pipeline {
                             dir d.dir
                             additionalBuildArgs d.buildArgs
                             args d.args
-                            label 'Slave2_emulator'
+                            label 'Slave3_emulator'
                         }
                     }
 
@@ -199,7 +199,7 @@ pipeline {
                             dir d.dir
                             additionalBuildArgs d.buildArgs
                             args d.args
-                            label 'Slave3_emulator'
+                            label 'Slave2_emulator'
                         }
                     }
 
